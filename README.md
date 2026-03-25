@@ -1,5 +1,3 @@
-# Gmail MCP Server
-
 **Manage Gmail inbox, send emails, and organize messages via API.**
 
 A Model Context Protocol (MCP) server that exposes Gmail's API for comprehensive email management, including sending, receiving, searching, and organizing messages.
