@@ -42,3 +42,4 @@ ENV/
 # OS
 .DS_Store
 Thumbs.db
+/cl-mcp-gmail/venv
