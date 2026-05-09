@@ -8,11 +8,15 @@ from fastmcp import FastMCP
 from gmail_mcp.cli import parse_args
 from gmail_mcp.config import configure_logging
 from gmail_mcp.tools import register_tools
+from fastmcp_credentials import CredentialMiddleware, HeaderCredentialBackend
 
 configure_logging()
 logger = logging.getLogger("gmail-mcp-server")
 
-mcp = FastMCP("CL Gmail MCP Server")
+backend = HeaderCredentialBackend()
+mcp = FastMCP(
+    "CL Gmail MCP Server", middleware=[CredentialMiddleware(backend, "oauth")]
+)
 register_tools(mcp)
 
 # Expose ASGI app for hosting platform's (e.g. Vercel) Python runtime.

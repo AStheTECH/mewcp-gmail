@@ -18,7 +18,6 @@ from .schemas import (
     IdMessageToolResponse,
     LabelsListToolResponse,
     ModifyLabelsToolResponse,
-    OAuthTokenData,
     SearchMessagesToolResponse,
     SendMessageToolResponse,
 )
@@ -29,15 +28,17 @@ logger = logging.getLogger("gmail-mcp-server")
 
 def register_tools(mcp: FastMCP) -> None:
 
-    @mcp.tool(name="get_profile", description="Get the user's Gmail profile information")
-    def get_profile(oauth_token: OAuthTokenData = Field(..., description="OAuth token")) -> ApiObjectResponse:
+    @mcp.tool(
+        name="get_profile", description="Get the user's Gmail profile information"
+    )
+    def get_profile() -> ApiObjectResponse:
         """
         Returns:
             Gmail profile object (e.g., email address, message/thread totals) or error.
         """
         logger.info("Executing get_profile")
         try:
-            service = get_service(oauth_token)
+            service = get_service()
             profile = service.users().getProfile(userId="me").execute()
             logger.info(f"Retrieved profile for: {profile.get('emailAddress')}")
             return profile
@@ -49,7 +50,11 @@ def register_tools(mcp: FastMCP) -> None:
         name="get_message", description="Get a specific message by ID with full details"
     )
     def get_message(
-        oauth_token: OAuthTokenData = Field(..., description="OAuth token"), message_id: str = Field(..., description="Gmail message ID"), format: str = Field(default="full", description="Gmail message format common values: `minimal`, `full`, `raw`, `metadata`")
+        message_id: str = Field(..., description="Gmail message ID"),
+        format: str = Field(
+            default="full",
+            description="Gmail message format common values: `minimal`, `full`, `raw`, `metadata`",
+        ),
     ) -> ApiObjectResponse:
         """
         Returns:
@@ -57,7 +62,7 @@ def register_tools(mcp: FastMCP) -> None:
         """
         logger.info(f"Executing get_message for ID: {message_id}")
         try:
-            service = get_service(oauth_token)
+            service = get_service()
             message = (
                 service.users()
                 .messages()
@@ -72,11 +77,12 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="send_message", description="Send an email message")
     def send_message(
-        oauth_token: OAuthTokenData = Field(..., description="OAuth token"),
         to: str = Field(..., description="Recipient email address"),
         subject: str = Field(..., description="Email subject"),
         body: str = Field(..., description="Plain-text email body"),
-        cc: Optional[str] = Field(default="", description="Optional comma-separated CC recipients"),
+        cc: Optional[str] = Field(
+            default="", description="Optional comma-separated CC recipients"
+        ),
         bcc: str = "",
     ) -> SendMessageToolResponse:
         """
@@ -85,7 +91,7 @@ def register_tools(mcp: FastMCP) -> None:
         """
         logger.info(f"Executing send_message to: {to}")
         try:
-            service = get_service(oauth_token)
+            service = get_service()
 
             message = MIMEText(body)
             message["to"] = to
@@ -120,12 +126,13 @@ def register_tools(mcp: FastMCP) -> None:
         description="Send an email message with file attachments",
     )
     def send_message_with_attachment(
-        oauth_token: OAuthTokenData  = Field(..., description="OAuth token"),
         to: str = Field(..., description="Recipient email address"),
         subject: str = Field(..., description="Email subject"),
         body: str = Field(..., description="Plain-text email body"),
         attachment_path: str = Field(..., description="Local path to file attachment"),
-        cc: Optional[str] = Field(default="", description="Optional comma-separated CC recipients"),
+        cc: Optional[str] = Field(
+            default="", description="Optional comma-separated CC recipients"
+        ),
     ) -> SendMessageToolResponse:
         """
         Returns:
@@ -133,7 +140,7 @@ def register_tools(mcp: FastMCP) -> None:
         """
         logger.info(f"Executing send_message_with_attachment to: {to}")
         try:
-            service = get_service(oauth_token)
+            service = get_service()
 
             message = MIMEMultipart()
             message["to"] = to
@@ -181,9 +188,10 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="reply_to_message", description="Reply to an existing email message")
     def reply_to_message(
-        oauth_token: OAuthTokenData  = Field(..., description="OAuth token"),
-        message_id: str = Field(..., description="Original Gmail message ID to reply to"),
-        body: str = Field(..., description="Reply body text")
+        message_id: str = Field(
+            ..., description="Original Gmail message ID to reply to"
+        ),
+        body: str = Field(..., description="Reply body text"),
     ) -> SendMessageToolResponse:
         """
         Returns:
@@ -191,7 +199,7 @@ def register_tools(mcp: FastMCP) -> None:
         """
         logger.info(f"Executing reply_to_message for ID: {message_id}")
         try:
-            service = get_service(oauth_token)
+            service = get_service()
 
             original_message = (
                 service.users()
@@ -237,7 +245,7 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="delete_message", description="Delete a message permanently")
     def delete_message(
-        oauth_token: OAuthTokenData  = Field(..., description="OAuth token"), message_id: str = Field(..., description="Gmail message ID")
+        message_id: str = Field(..., description="Gmail message ID"),
     ) -> IdMessageToolResponse:
         """
         Returns:
@@ -245,17 +253,20 @@ def register_tools(mcp: FastMCP) -> None:
         """
         logger.info(f"Executing delete_message for ID: {message_id}")
         try:
-            service = get_service(oauth_token)
+            service = get_service()
             service.users().messages().delete(userId="me", id=message_id).execute()
             logger.info("Message deleted successfully")
-            return {"message": f"Message {message_id} deleted successfully", "id": message_id}
+            return {
+                "message": f"Message {message_id} deleted successfully",
+                "id": message_id,
+            }
         except Exception as e:
             logger.error(f"Error in delete_message: {e}")
             return {"error": str(e)}
 
     @mcp.tool(name="trash_message", description="Move a message to trash")
     def trash_message(
-        oauth_token: OAuthTokenData  = Field(..., description="OAuth token"), message_id: str = Field(..., description="Gmail message ID")
+        message_id: str = Field(..., description="Gmail message ID"),
     ) -> IdMessageToolResponse:
         """
         Returns:
@@ -263,8 +274,10 @@ def register_tools(mcp: FastMCP) -> None:
         """
         logger.info(f"Executing trash_message for ID: {message_id}")
         try:
-            service = get_service(oauth_token)
-            message = service.users().messages().trash(userId="me", id=message_id).execute()
+            service = get_service()
+            message = (
+                service.users().messages().trash(userId="me", id=message_id).execute()
+            )
             logger.info("Message moved to trash")
             return {
                 "message": "Message moved to trash successfully",
@@ -276,7 +289,7 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="untrash_message", description="Remove a message from trash")
     def untrash_message(
-        oauth_token: OAuthTokenData  = Field(..., description="OAuth token"), message_id: str = Field(..., description="Gmail message ID")
+        message_id: str = Field(..., description="Gmail message ID"),
     ) -> IdMessageToolResponse:
         """
         Returns:
@@ -284,8 +297,10 @@ def register_tools(mcp: FastMCP) -> None:
         """
         logger.info(f"Executing untrash_message for ID: {message_id}")
         try:
-            service = get_service(oauth_token)
-            message = service.users().messages().untrash(userId="me", id=message_id).execute()
+            service = get_service()
+            message = (
+                service.users().messages().untrash(userId="me", id=message_id).execute()
+            )
             logger.info("Message removed from trash")
             return {
                 "message": "Message removed from trash successfully",
@@ -295,12 +310,17 @@ def register_tools(mcp: FastMCP) -> None:
             logger.error(f"Error in untrash_message: {e}")
             return {"error": str(e)}
 
-    @mcp.tool(name="modify_message_labels", description="Add or remove labels from a message")
+    @mcp.tool(
+        name="modify_message_labels", description="Add or remove labels from a message"
+    )
     def modify_message_labels(
-        oauth_token: OAuthTokenData  = Field(..., description="OAuth token"),
         message_id: str = Field(..., description="Gmail message ID"),
-        add_labels: list[str] = Field(default_factory=list, description="Label IDs to add"),
-        remove_labels: list[str] = Field(default_factory=list, description="Label IDs to remove"),
+        add_labels: list[str] = Field(
+            default_factory=list, description="Label IDs to add"
+        ),
+        remove_labels: list[str] = Field(
+            default_factory=list, description="Label IDs to remove"
+        ),
     ) -> ModifyLabelsToolResponse:
         """
         Returns:
@@ -308,7 +328,7 @@ def register_tools(mcp: FastMCP) -> None:
         """
         logger.info(f"Executing modify_message_labels for ID: {message_id}")
         try:
-            service = get_service(oauth_token)
+            service = get_service()
 
             body = {}
             if add_labels:
@@ -317,7 +337,10 @@ def register_tools(mcp: FastMCP) -> None:
                 body["removeLabelIds"] = remove_labels
 
             message = (
-                service.users().messages().modify(userId="me", id=message_id, body=body).execute()
+                service.users()
+                .messages()
+                .modify(userId="me", id=message_id, body=body)
+                .execute()
             )
 
             logger.info("Message labels modified successfully")
@@ -331,14 +354,14 @@ def register_tools(mcp: FastMCP) -> None:
             return {"error": str(e)}
 
     @mcp.tool(name="list_labels", description="Get all labels in the user's mailbox")
-    def list_labels(oauth_token: OAuthTokenData  = Field(..., description="OAuth token")) -> LabelsListToolResponse:
+    def list_labels() -> LabelsListToolResponse:
         """
         Returns:
             Label count and label objects or error.
         """
         logger.info("Executing list_labels")
         try:
-            service = get_service(oauth_token)
+            service = get_service()
             results = service.users().labels().list(userId="me").execute()
             labels = results.get("labels", [])
             logger.info(f"Found {len(labels)} labels")
@@ -349,10 +372,15 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="create_label", description="Create a new label")
     def create_label(
-        oauth_token: OAuthTokenData  = Field(..., description="OAuth token"),
         name: str = Field(..., description="Label name"),
-        label_list_visibility: str = Field(default="labelShow", description="Label list visibility Common values include `labelShow`, `labelShowIfUnread`, `labelHide`"),
-        message_list_visibility: str = Field(default="show", description="Message list visibility Common values include `show`, `hide`"),
+        label_list_visibility: str = Field(
+            default="labelShow",
+            description="Label list visibility Common values include `labelShow`, `labelShowIfUnread`, `labelHide`",
+        ),
+        message_list_visibility: str = Field(
+            default="show",
+            description="Message list visibility Common values include `show`, `hide`",
+        ),
     ) -> CreateLabelToolResponse:
         """
         Returns:
@@ -360,7 +388,7 @@ def register_tools(mcp: FastMCP) -> None:
         """
         logger.info(f"Executing create_label: {name}")
         try:
-            service = get_service(oauth_token)
+            service = get_service()
 
             label = {
                 "name": name,
@@ -368,7 +396,9 @@ def register_tools(mcp: FastMCP) -> None:
                 "messageListVisibility": message_list_visibility,
             }
 
-            created_label = service.users().labels().create(userId="me", body=label).execute()
+            created_label = (
+                service.users().labels().create(userId="me", body=label).execute()
+            )
 
             logger.info(f"Label created successfully: {created_label.get('id')}")
             return {"message": "Label created successfully", "label": created_label}
@@ -377,14 +407,16 @@ def register_tools(mcp: FastMCP) -> None:
             return {"error": str(e)}
 
     @mcp.tool(name="delete_label", description="Delete a label")
-    def delete_label(oauth_token: OAuthTokenData  = Field(..., description="OAuth token"), label_id: str = Field(..., description="Label ID to delete") ) -> IdMessageToolResponse:
+    def delete_label(
+        label_id: str = Field(..., description="Label ID to delete"),
+    ) -> IdMessageToolResponse:
         """
         Returns:
             Deletion status with label ID or error.
         """
         logger.info(f"Executing delete_label for ID: {label_id}")
         try:
-            service = get_service(oauth_token)
+            service = get_service()
             service.users().labels().delete(userId="me", id=label_id).execute()
             logger.info("Label deleted successfully")
             return {"message": f"Label {label_id} deleted successfully", "id": label_id}
@@ -392,9 +424,14 @@ def register_tools(mcp: FastMCP) -> None:
             logger.error(f"Error in delete_label: {e}")
             return {"error": str(e)}
 
-    @mcp.tool(name="search_messages", description="Search messages using Gmail search syntax")
+    @mcp.tool(
+        name="search_messages", description="Search messages using Gmail search syntax"
+    )
     def search_messages(
-        oauth_token: OAuthTokenData  = Field(..., description="OAuth token"), query: str = Field(..., description="Search query e.g. 'from:example@x.com' "), max_results: int = Field(default=10, description="Maximum results to return, server caps at 500")
+        query: str = Field(..., description="Search query e.g. 'from:example@x.com' "),
+        max_results: int = Field(
+            default=10, description="Maximum results to return, server caps at 500"
+        ),
     ) -> SearchMessagesToolResponse:
         """
         Returns:
@@ -402,7 +439,7 @@ def register_tools(mcp: FastMCP) -> None:
         """
         logger.info(f"Executing search_messages with query: {query}")
         try:
-            service = get_service(oauth_token)
+            service = get_service()
 
             results = (
                 service.users()
@@ -425,7 +462,7 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="mark_as_read", description="Mark a message as read")
     def mark_as_read(
-        oauth_token: OAuthTokenData  = Field(..., description="OAuth token"), message_id: str = Field(..., description="Message ID to mark as read")
+        message_id: str = Field(..., description="Message ID to mark as read"),
     ) -> IdMessageToolResponse:
         """
         Returns:
@@ -433,7 +470,7 @@ def register_tools(mcp: FastMCP) -> None:
         """
         logger.info(f"Executing mark_as_read for ID: {message_id}")
         try:
-            service = get_service(oauth_token)
+            service = get_service()
 
             message = (
                 service.users()
@@ -453,7 +490,7 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="mark_as_unread", description="Mark a message as unread")
     def mark_as_unread(
-        oauth_token: OAuthTokenData  = Field(..., description="OAuth token"), message_id: str = Field(..., description=" Gmail Message ID to mark as unread")
+        message_id: str = Field(..., description=" Gmail Message ID to mark as unread"),
     ) -> IdMessageToolResponse:
         """
         Returns:
@@ -461,7 +498,7 @@ def register_tools(mcp: FastMCP) -> None:
         """
         logger.info(f"Executing mark_as_unread for ID: {message_id}")
         try:
-            service = get_service(oauth_token)
+            service = get_service()
 
             message = (
                 service.users()
@@ -481,7 +518,11 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="get_thread", description="Get an entire email thread")
     def get_thread(
-        oauth_token: OAuthTokenData  = Field(..., description="OAuth token"), thread_id: str = Field(..., description="Gmail Thread ID"), format: str = Field(default="full", description="Thread message format. Common values: 'minimal', 'full', 'raw', 'metadata'")
+        thread_id: str = Field(..., description="Gmail Thread ID"),
+        format: str = Field(
+            default="full",
+            description="Thread message format. Common values: 'minimal', 'full', 'raw', 'metadata'",
+        ),
     ) -> ApiObjectResponse:
         """
         Returns:
@@ -489,13 +530,18 @@ def register_tools(mcp: FastMCP) -> None:
         """
         logger.info(f"Executing get_thread for ID: {thread_id}")
         try:
-            service = get_service(oauth_token)
+            service = get_service()
 
             thread = (
-                service.users().threads().get(userId="me", id=thread_id, format=format).execute()
+                service.users()
+                .threads()
+                .get(userId="me", id=thread_id, format=format)
+                .execute()
             )
 
-            logger.info(f"Retrieved thread with {len(thread.get('messages', []))} messages")
+            logger.info(
+                f"Retrieved thread with {len(thread.get('messages', []))} messages"
+            )
             return thread
         except Exception as e:
             logger.error(f"Error in get_thread: {e}")
@@ -503,7 +549,9 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="list_drafts", description="List draft messages")
     def list_drafts(
-        oauth_token: OAuthTokenData  = Field(..., description="OAuth token"), max_results: int = Field(default=10, description="Maximum drafts to return, server caps at 500")
+        max_results: int = Field(
+            default=10, description="Maximum drafts to return, server caps at 500"
+        ),
     ) -> DraftsListToolResponse:
         """
         Returns:
@@ -511,7 +559,7 @@ def register_tools(mcp: FastMCP) -> None:
         """
         logger.info("Executing list_drafts")
         try:
-            service = get_service(oauth_token)
+            service = get_service()
 
             results = (
                 service.users()
@@ -530,7 +578,9 @@ def register_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(name="create_draft", description="Create a draft message")
     def create_draft(
-        oauth_token: OAuthTokenData  = Field(..., description="OAuth token"), to: str = Field(..., description="Recipient email address"), subject: str = Field(..., description="Draft subject"), body: str = Field(..., description="Draft body text")
+        to: str = Field(..., description="Recipient email address"),
+        subject: str = Field(..., description="Draft subject"),
+        body: str = Field(..., description="Draft body text"),
     ) -> CreateDraftToolResponse:
         """
 
@@ -539,7 +589,7 @@ def register_tools(mcp: FastMCP) -> None:
         """
         logger.info(f"Executing create_draft to: {to}")
         try:
-            service = get_service(oauth_token)
+            service = get_service()
 
             message = MIMEText(body)
             message["to"] = to
