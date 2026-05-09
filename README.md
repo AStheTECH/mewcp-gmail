@@ -2,7 +2,6 @@
 
 A Model Context Protocol (MCP) server that exposes Gmail's API for reading, sending, organizing, and managing email messages, threads, labels, and drafts.
 
----
 
 ## Overview
 
@@ -18,7 +17,6 @@ Perfect for:
 - Building assistants that can read, respond to, and triage email
 - Integrating Gmail actions into LLM-powered pipelines
 
----
 
 ## Tools
 
@@ -45,7 +43,6 @@ None
 
 </details>
 
----
 
 <details>
 <summary><code>get_message</code> — Get a specific message by ID with full details</summary>
@@ -71,7 +68,6 @@ Fetches a single Gmail message by its ID in the requested format.
 
 </details>
 
----
 
 <details>
 <summary><code>send_message</code> — Send an email message</summary>
@@ -99,7 +95,6 @@ Composes and sends a plain-text email to one or more recipients.
 
 </details>
 
----
 
 <details>
 <summary><code>send_message_with_attachment</code> — Send an email message with file attachments</summary>
@@ -127,7 +122,6 @@ Composes and sends an email with a file attachment from the local filesystem.
 
 </details>
 
----
 
 <details>
 <summary><code>reply_to_message</code> — Reply to an existing email message</summary>
@@ -152,7 +146,6 @@ Sends a reply to an existing message, preserving the thread and original headers
 
 </details>
 
----
 
 <details>
 <summary><code>delete_message</code> — Delete a message permanently</summary>
@@ -175,7 +168,6 @@ Permanently deletes a message. This action cannot be undone.
 
 </details>
 
----
 
 <details>
 <summary><code>trash_message</code> — Move a message to trash</summary>
@@ -198,7 +190,6 @@ Moves a message to the trash folder. The message can be recovered until the tras
 
 </details>
 
----
 
 <details>
 <summary><code>untrash_message</code> — Remove a message from trash</summary>
@@ -221,7 +212,6 @@ Restores a message from the trash back to the inbox.
 
 </details>
 
----
 
 <details>
 <summary><code>modify_message_labels</code> — Add or remove labels from a message</summary>
@@ -247,7 +237,6 @@ Applies or removes one or more labels from a message in a single operation.
 
 </details>
 
----
 
 <details>
 <summary><code>list_labels</code> — Get all labels in the user's mailbox</summary>
@@ -273,7 +262,6 @@ None
 
 </details>
 
----
 
 <details>
 <summary><code>create_label</code> — Create a new label</summary>
@@ -303,7 +291,6 @@ Creates a new user-defined label with configurable visibility settings.
 
 </details>
 
----
 
 <details>
 <summary><code>delete_label</code> — Delete a label</summary>
@@ -326,7 +313,6 @@ Permanently deletes a user-defined label. Messages with this label are not delet
 
 </details>
 
----
 
 <details>
 <summary><code>search_messages</code> — Search messages using Gmail search syntax</summary>
@@ -353,7 +339,6 @@ Searches messages using Gmail's native query syntax and returns matching message
 
 </details>
 
----
 
 <details>
 <summary><code>mark_as_read</code> — Mark a message as read</summary>
@@ -376,7 +361,6 @@ Removes the UNREAD label from a message, marking it as read.
 
 </details>
 
----
 
 <details>
 <summary><code>mark_as_unread</code> — Mark a message as unread</summary>
@@ -399,7 +383,6 @@ Adds the UNREAD label to a message, marking it as unread.
 
 </details>
 
----
 
 <details>
 <summary><code>get_thread</code> — Get an entire email thread</summary>
@@ -424,7 +407,6 @@ Fetches a full email thread including all messages it contains.
 
 </details>
 
----
 
 <details>
 <summary><code>list_drafts</code> — List draft messages</summary>
@@ -449,7 +431,6 @@ Returns a list of draft messages in the authenticated user's mailbox.
 
 </details>
 
----
 
 <details>
 <summary><code>create_draft</code> — Create a draft message</summary>
@@ -474,19 +455,21 @@ Creates a new draft email without sending it.
 
 </details>
 
----
+
+## API Parameters Reference
 
 <details>
-<summary><strong>API Parameters Reference</strong></summary>
-
-### Common Parameters
+<summary><strong>Common Parameters</strong></summary>
 
 - `message_id` — Unique Gmail message identifier. Obtain from `search_messages`, `list_drafts`, or any message response.
 - `thread_id` — Unique Gmail thread identifier. Present in every message object as `threadId`.
 - `label_id` — Label identifier. Obtain from `list_labels`. System labels use names like `INBOX`, `SENT`, `TRASH`, `UNREAD`, `STARRED`.
 - `max_results` — Limits the number of items returned. Always capped at 500.
 
-### Resource Formats
+</details>
+
+<details>
+<summary><strong>Resource Formats</strong></summary>
 
 **Message `format` values:**
 
@@ -512,19 +495,21 @@ label:Work               — Messages with a specific label
 
 </details>
 
----
+
+## Troubleshooting
 
 <details>
-<summary><strong>Troubleshooting</strong></summary>
-
-### **Missing or Invalid Headers**
+<summary><strong>Missing or Invalid Headers</strong></summary>
 
 - **Cause:** API key not provided in request headers or incorrect format
 - **Solution:**
   1. Verify `Authorization: Bearer YOUR_API_KEY` and `X-Mewcp-Credential-Id: CREDENTIAL-ID` headers are present
   2. Check API key is active in your MewCP account
 
-### **Insufficient Credits**
+</details>
+
+<details>
+<summary><strong>Insufficient Credits</strong></summary>
 
 - **Cause:** API calls have exceeded your request limits
 - **Solution:**
@@ -532,7 +517,10 @@ label:Work               — Messages with a specific label
   2. Upgrade to a paid plan or add credits for higher limits
   3. Contact support for credit adjustments
 
-### **Credential Not Connected**
+</details>
+
+<details>
+<summary><strong>Credential Not Connected</strong></summary>
 
 - **Cause:** No Gmail credential linked to your account
 - **Solution:**
@@ -540,7 +528,10 @@ label:Work               — Messages with a specific label
   2. Connect your Google account via OAuth
   3. Retry the request with the correct `X-Mewcp-Credential-Id` header
 
-### **Malformed Request Payload**
+</details>
+
+<details>
+<summary><strong>Malformed Request Payload</strong></summary>
 
 - **Cause:** JSON payload is invalid or missing required fields
 - **Solution:**
@@ -548,7 +539,10 @@ label:Work               — Messages with a specific label
   2. Ensure all required tool parameters are included
   3. Check parameter types match expected values
 
-### **Server Not Found**
+</details>
+
+<details>
+<summary><strong>Server Not Found</strong></summary>
 
 - **Cause:** Incorrect server name in the API endpoint
 - **Solution:**
@@ -556,7 +550,10 @@ label:Work               — Messages with a specific label
   2. Use correct server name from documentation
   3. Check available servers in your Curious Layer account
 
-### **Gmail API Error**
+</details>
+
+<details>
+<summary><strong>Gmail API Error</strong></summary>
 
 - **Cause:** Upstream Gmail API returned an error
 - **Solution:**
@@ -568,12 +565,9 @@ label:Work               — Messages with a specific label
 
 ---
 
-<details>
-<summary><strong>Resources</strong></summary>
+### Resources
 
 - **[Gmail API Documentation](https://developers.google.com/gmail/api/guides)** — Official API reference
 - **[Gmail API Reference](https://developers.google.com/gmail/api/reference/rest)** — Complete endpoint reference
 - **[FastMCP Docs](https://gofastmcp.com/v2/getting-started/welcome)** — FastMCP specification
 - **[FastMCP Credentials](https://pypi.org/project/fastmcp-credentials/)** — FastMCP Credentials package for credential handling
-
-</details>
