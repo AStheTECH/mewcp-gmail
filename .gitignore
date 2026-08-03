@@ -1,45 +1,13 @@
-# OAuth credentials and tokens
-secret.json
-token.json
-
-# Logs
-*.log
-
-# Python
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
+*.py[oc]
 build/
-develop-eggs/
 dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
 wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Virtual environments
-venv/
+*.egg-info
+.venv
+venv
 env/
-ENV/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
-/cl-mcp-gmail/venv
+/pyproject.toml
+/.python-version
+*.lock
+*_api_docs/
