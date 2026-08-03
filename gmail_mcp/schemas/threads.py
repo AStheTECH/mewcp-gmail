@@ -34,3 +34,36 @@ class DeleteThreadData(BaseModel):
 
 class DeleteThreadResult(ToolResult):
     data: DeleteThreadData | None = None
+
+
+class ModifyThreadData(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    before: ThreadData
+    after: ThreadData
+
+
+class ModifyThreadResult(ToolResult):
+    data: ModifyThreadData | None = None
+
+
+class TrashThreadData(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    before: ThreadData
+    after: ThreadData
+
+
+class TrashThreadResult(ToolResult):
+    data: TrashThreadData | None = None
+
+
+class UntrashThreadData(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    before: ThreadData
+    after: ThreadData
+
+
+class UntrashThreadResult(ToolResult):
+    data: UntrashThreadData | None = None

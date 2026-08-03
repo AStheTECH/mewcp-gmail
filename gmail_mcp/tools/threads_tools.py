@@ -11,10 +11,16 @@ from ..logging_utils import ToolLogger
 from ..schemas.threads import (
     DeleteThreadData,
     DeleteThreadResult,
+    ModifyThreadData,
+    ModifyThreadResult,
     ThreadData,
     ThreadResult,
     ThreadsData,
     ThreadsResult,
+    TrashThreadData,
+    TrashThreadResult,
+    UntrashThreadData,
+    UntrashThreadResult,
 )
 from ._helpers import _err, _handle_request_exc
 
@@ -200,21 +206,21 @@ def register_threads_tools(mcp: FastMCP) -> None:
             default=None,
             description="Label IDs to remove from this thread (all its messages). Up to 100 per update.",
         ),
-    ) -> ThreadResult:
+    ) -> ModifyThreadResult:
         tlog = ToolLogger(logger, "modify_thread")
 
         if not userId:
-            return _err(ThreadResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
+            return _err(ModifyThreadResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
         if not id:
-            return _err(ThreadResult, tlog, "VALIDATION_ERROR", "id is required", 400)
+            return _err(ModifyThreadResult, tlog, "VALIDATION_ERROR", "id is required", 400)
         if addLabelIds and len(addLabelIds) > 100:
             return _err(
-                ThreadResult, tlog, "VALIDATION_ERROR",
+                ModifyThreadResult, tlog, "VALIDATION_ERROR",
                 "addLabelIds accepts up to 100 label IDs per update", 400,
             )
         if removeLabelIds and len(removeLabelIds) > 100:
             return _err(
-                ThreadResult, tlog, "VALIDATION_ERROR",
+                ModifyThreadResult, tlog, "VALIDATION_ERROR",
                 "removeLabelIds accepts up to 100 label IDs per update", 400,
             )
 
@@ -230,9 +236,13 @@ def register_threads_tools(mcp: FastMCP) -> None:
 
             after = gmail_service.users().threads().modify(userId=userId, id=id, body=body).execute()
             tlog.success()
-            return ThreadResult(success=True, statusCode=200, data=ThreadData(**{**after, "before": before}))
+            return ModifyThreadResult(
+                success=True,
+                statusCode=200,
+                data=ModifyThreadData(before=ThreadData(**before), after=ThreadData(**after)),
+            )
         except Exception as exc:
-            return _handle_request_exc(ThreadResult, tlog, exc)
+            return _handle_request_exc(ModifyThreadResult, tlog, exc)
 
     @mcp.tool(
         name="trash_thread",
@@ -252,22 +262,26 @@ def register_threads_tools(mcp: FastMCP) -> None:
             )
         ),
         id: str = Field(description="The ID of the thread to trash."),
-    ) -> ThreadResult:
+    ) -> TrashThreadResult:
         tlog = ToolLogger(logger, "trash_thread")
 
         if not userId:
-            return _err(ThreadResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
+            return _err(TrashThreadResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
         if not id:
-            return _err(ThreadResult, tlog, "VALIDATION_ERROR", "id is required", 400)
+            return _err(TrashThreadResult, tlog, "VALIDATION_ERROR", "id is required", 400)
 
         try:
             gmail_service = service.get_service()
             before = gmail_service.users().threads().get(userId=userId, id=id).execute()
             after = gmail_service.users().threads().trash(userId=userId, id=id).execute()
             tlog.success()
-            return ThreadResult(success=True, statusCode=200, data=ThreadData(**{**after, "before": before}))
+            return TrashThreadResult(
+                success=True,
+                statusCode=200,
+                data=TrashThreadData(before=ThreadData(**before), after=ThreadData(**after)),
+            )
         except Exception as exc:
-            return _handle_request_exc(ThreadResult, tlog, exc)
+            return _handle_request_exc(TrashThreadResult, tlog, exc)
 
     @mcp.tool(
         name="untrash_thread",
@@ -287,19 +301,23 @@ def register_threads_tools(mcp: FastMCP) -> None:
             )
         ),
         id: str = Field(description="The ID of the thread to remove from trash."),
-    ) -> ThreadResult:
+    ) -> UntrashThreadResult:
         tlog = ToolLogger(logger, "untrash_thread")
 
         if not userId:
-            return _err(ThreadResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
+            return _err(UntrashThreadResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
         if not id:
-            return _err(ThreadResult, tlog, "VALIDATION_ERROR", "id is required", 400)
+            return _err(UntrashThreadResult, tlog, "VALIDATION_ERROR", "id is required", 400)
 
         try:
             gmail_service = service.get_service()
             before = gmail_service.users().threads().get(userId=userId, id=id).execute()
             after = gmail_service.users().threads().untrash(userId=userId, id=id).execute()
             tlog.success()
-            return ThreadResult(success=True, statusCode=200, data=ThreadData(**{**after, "before": before}))
+            return UntrashThreadResult(
+                success=True,
+                statusCode=200,
+                data=UntrashThreadData(before=ThreadData(**before), after=ThreadData(**after)),
+            )
         except Exception as exc:
-            return _handle_request_exc(ThreadResult, tlog, exc)
+            return _handle_request_exc(UntrashThreadResult, tlog, exc)
