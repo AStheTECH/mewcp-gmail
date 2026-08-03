@@ -25,10 +25,6 @@ class SendAsAliasData(BaseModel):
     treatAsAlias: bool | None = None
     smtpMsa: SmtpMsaData | None = None
     verificationStatus: str | None = None
-    # Populated only by update_send_as_alias, which reports the pre-update
-    # state alongside the (top-level) post-update state. Left unset by
-    # get_send_as_alias, which only ever reports the current state.
-    before: "SendAsAliasData | None" = None
 
 
 class SendAsAliasResult(ToolResult):
@@ -43,3 +39,14 @@ class SendAsAliasesData(BaseModel):
 
 class SendAsAliasesResult(ToolResult):
     data: SendAsAliasesData | None = None
+
+
+class UpdateSendAsAliasData(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    before: SendAsAliasData
+    after: SendAsAliasData
+
+
+class UpdateSendAsAliasResult(ToolResult):
+    data: UpdateSendAsAliasData | None = None

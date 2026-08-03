@@ -13,6 +13,8 @@ from ..schemas.send_as import (
     SendAsAliasesData,
     SendAsAliasesResult,
     SendAsAliasResult,
+    UpdateSendAsAliasData,
+    UpdateSendAsAliasResult,
 )
 from ._helpers import _err, _handle_request_exc
 
@@ -142,13 +144,13 @@ def register_send_as_tools(mcp: FastMCP) -> None:
                 "`ssl`, `starttls`)."
             ),
         ),
-    ) -> SendAsAliasResult:
+    ) -> UpdateSendAsAliasResult:
         tlog = ToolLogger(logger, "update_send_as_alias")
 
         if not userId:
-            return _err(SendAsAliasResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
+            return _err(UpdateSendAsAliasResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
         if not sendAsEmail:
-            return _err(SendAsAliasResult, tlog, "VALIDATION_ERROR", "sendAsEmail is required", 400)
+            return _err(UpdateSendAsAliasResult, tlog, "VALIDATION_ERROR", "sendAsEmail is required", 400)
 
         try:
             gmail_service = service.get_service()
@@ -182,10 +184,13 @@ def register_send_as_tools(mcp: FastMCP) -> None:
                 .execute()
             )
             tlog.success()
-            return SendAsAliasResult(
+            return UpdateSendAsAliasResult(
                 success=True,
                 statusCode=200,
-                data=SendAsAliasData(**after_data, before=before_data),
+                data=UpdateSendAsAliasData(
+                    before=SendAsAliasData(**before_data),
+                    after=SendAsAliasData(**after_data),
+                ),
             )
         except Exception as exc:
-            return _handle_request_exc(SendAsAliasResult, tlog, exc)
+            return _handle_request_exc(UpdateSendAsAliasResult, tlog, exc)
