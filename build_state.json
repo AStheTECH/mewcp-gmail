@@ -1,7 +1,7 @@
 {
   "manifest_server_block": true,
   "planning": true,
-  "infra": false,
+  "infra": true,
   "tool_groups": {},
   "built_from": {
     "profile": [
