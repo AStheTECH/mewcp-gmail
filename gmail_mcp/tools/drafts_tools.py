@@ -17,6 +17,8 @@ from ..schemas.drafts import (
     DraftsResult,
     SendDraftData,
     SendDraftResult,
+    UpdateDraftData,
+    UpdateDraftResult,
 )
 from ._helpers import _err, _handle_request_exc
 
@@ -246,13 +248,13 @@ def register_drafts_tools(mcp: FastMCP) -> None:
                 "a full replace, send this to give the draft its new content."
             ),
         ),
-    ) -> DraftResult:
+    ) -> UpdateDraftResult:
         tlog = ToolLogger(logger, "update_draft")
 
         if not userId:
-            return _err(DraftResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
+            return _err(UpdateDraftResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
         if not id:
-            return _err(DraftResult, tlog, "VALIDATION_ERROR", "id is required", 400)
+            return _err(UpdateDraftResult, tlog, "VALIDATION_ERROR", "id is required", 400)
 
         try:
             gmail_service = service.get_service()
@@ -260,10 +262,10 @@ def register_drafts_tools(mcp: FastMCP) -> None:
             body = {"message": message} if message else {}
             after_data = gmail_service.users().drafts().update(userId=userId, id=id, body=body).execute()
             tlog.success()
-            return DraftResult(
+            return UpdateDraftResult(
                 success=True,
                 statusCode=200,
-                data=DraftData(**after_data, before=before_data),
+                data=UpdateDraftData(before=DraftData(**before_data), after=DraftData(**after_data)),
             )
         except Exception as exc:
-            return _handle_request_exc(DraftResult, tlog, exc)
+            return _handle_request_exc(UpdateDraftResult, tlog, exc)

@@ -40,3 +40,14 @@ class SendDraftData(BaseModel):
 
 class SendDraftResult(ToolResult):
     data: SendDraftData | None = None
+
+
+class UpdateDraftData(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    before: DraftData
+    after: DraftData
+
+
+class UpdateDraftResult(ToolResult):
+    data: UpdateDraftData | None = None
