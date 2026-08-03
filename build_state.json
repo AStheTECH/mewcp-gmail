@@ -2,7 +2,18 @@
   "manifest_server_block": true,
   "planning": true,
   "infra": true,
-  "tool_groups": {},
+  "tool_groups": {
+    "profile": true,
+    "drafts": true,
+    "labels": true,
+    "messages": true,
+    "threads": true,
+    "history": true,
+    "settings": true,
+    "filters": true,
+    "forwarding_addresses": true,
+    "send_as": true
+  },
   "built_from": {
     "profile": [
       "get_profile.md"
