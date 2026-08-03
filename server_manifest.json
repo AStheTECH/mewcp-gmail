@@ -272,8 +272,8 @@
               }
             ],
             "schema": {
-              "data": "DraftData",
-              "result": "DraftResult"
+              "data": "UpdateDraftData",
+              "result": "UpdateDraftResult"
             }
           }
         }
@@ -633,8 +633,8 @@
               }
             ],
             "schema": {
-              "data": "LabelData",
-              "result": "LabelResult"
+              "data": "UpdateLabelData",
+              "result": "UpdateLabelResult"
             }
           }
         }
@@ -1445,8 +1445,8 @@
               }
             ],
             "schema": {
-              "data": "ThreadData",
-              "result": "ThreadResult"
+              "data": "ModifyThreadData",
+              "result": "ModifyThreadResult"
             }
           },
           "trash_thread": {
@@ -1490,8 +1490,8 @@
               }
             ],
             "schema": {
-              "data": "ThreadData",
-              "result": "ThreadResult"
+              "data": "TrashThreadData",
+              "result": "TrashThreadResult"
             }
           },
           "untrash_thread": {
@@ -1535,8 +1535,8 @@
               }
             ],
             "schema": {
-              "data": "ThreadData",
-              "result": "ThreadResult"
+              "data": "UntrashThreadData",
+              "result": "UntrashThreadResult"
             }
           }
         }
@@ -1853,8 +1853,8 @@
               }
             ],
             "schema": {
-              "data": "VacationSettingsData",
-              "result": "VacationSettingsResult"
+              "data": "UpdateVacationSettingsData",
+              "result": "UpdateVacationSettingsResult"
             }
           }
         }
@@ -2551,8 +2551,8 @@
               }
             ],
             "schema": {
-              "data": "SendAsAliasData",
-              "result": "SendAsAliasResult"
+              "data": "UpdateSendAsAliasData",
+              "result": "UpdateSendAsAliasResult"
             }
           }
         }
