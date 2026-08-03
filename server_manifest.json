@@ -7,7 +7,2558 @@
     "version": "v1.0.0",
     "api_base": "https://gmail.googleapis.com"
   },
-  "tools": { "groups": {} },
+  "tools": {
+    "groups": {
+      "profile": {
+        "file": "profile_tools.py",
+        "doc_source": "get_profile.md",
+        "register_fn": "register_profile_tools",
+        "tools": {
+          "get_profile": {
+            "endpoint": "GET /gmail/v1/users/{userId}/profile",
+            "description": "Gets the current user's Gmail profile, returning mailbox email address, message/thread totals, and current history ID.",
+            "tier": "GET",
+            "params": [
+              {
+                "name": "userId",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "emailAddress",
+                "type": "string"
+              },
+              {
+                "name": "messagesTotal",
+                "type": "integer"
+              },
+              {
+                "name": "threadsTotal",
+                "type": "integer"
+              },
+              {
+                "name": "historyId",
+                "type": "string"
+              }
+            ],
+            "schema": {
+              "data": "ProfileData",
+              "result": "ProfileResult"
+            }
+          }
+        }
+      },
+      "drafts": {
+        "file": "drafts_tools.py",
+        "doc_source": "drafts/*.md",
+        "register_fn": "register_drafts_tools",
+        "tools": {
+          "create_draft": {
+            "endpoint": "POST /gmail/v1/users/{userId}/drafts",
+            "description": "Creates a draft with the DRAFT label.",
+            "tier": "CREATE",
+            "params": [
+              {
+                "name": "userId",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "message",
+                "type": "object",
+                "required": false,
+                "description": "The message content of the draft (object (Message)); send this to give the draft its content."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "id",
+                "type": "string"
+              },
+              {
+                "name": "message",
+                "type": "object"
+              }
+            ],
+            "schema": {
+              "data": "DraftData",
+              "result": "DraftResult"
+            }
+          },
+          "delete_draft": {
+            "endpoint": "DELETE /gmail/v1/users/{userId}/drafts/{id}",
+            "description": "Immediately and permanently deletes the specified draft (does not simply trash it).",
+            "tier": "DELETE",
+            "params": [
+              {
+                "name": "userId",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "id",
+                "type": "string",
+                "required": true,
+                "description": "The ID of the draft to delete."
+              }
+            ],
+            "response_fields": [],
+            "schema": {
+              "data": "DeleteDraftData",
+              "result": "DeleteDraftResult"
+            }
+          },
+          "get_draft": {
+            "endpoint": "GET /gmail/v1/users/{userId}/drafts/{id}",
+            "description": "Gets the specified draft.",
+            "tier": "GET",
+            "params": [
+              {
+                "name": "userId",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "id",
+                "type": "string",
+                "required": true,
+                "description": "The ID of the draft to retrieve."
+              },
+              {
+                "name": "format",
+                "type": "enum",
+                "required": false,
+                "description": "The format to return the draft's message in: `minimal` (ID and labels only), `full` (full data, parsed into `payload`), `raw` (full data as a base64url string in `raw`; `payload` unused), `metadata` (ID, labels, and headers only). `full`/`raw` are unavailable when using the `gmail.metadata` scope."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "id",
+                "type": "string"
+              },
+              {
+                "name": "message",
+                "type": "object"
+              }
+            ],
+            "schema": {
+              "data": "DraftData",
+              "result": "DraftResult"
+            }
+          },
+          "list_drafts": {
+            "endpoint": "GET /gmail/v1/users/{userId}/drafts",
+            "description": "Lists the drafts in the user's mailbox.",
+            "tier": "GET",
+            "params": [
+              {
+                "name": "userId",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "maxResults",
+                "type": "integer",
+                "required": false,
+                "description": "Maximum number of drafts to return. Defaults to 100, maximum allowed is 500."
+              },
+              {
+                "name": "pageToken",
+                "type": "string",
+                "required": false,
+                "description": "Page token to retrieve a specific page of results."
+              },
+              {
+                "name": "q",
+                "type": "string",
+                "required": false,
+                "description": "Only return drafts matching this query, in Gmail search-box syntax, e.g. `\"from:someuser@example.com rfc822msgid:<somemsgid@example.com> is:unread\"`."
+              },
+              {
+                "name": "includeSpamTrash",
+                "type": "boolean",
+                "required": false,
+                "description": "Include drafts from `SPAM` and `TRASH` in the results."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "drafts[]",
+                "type": "array"
+              },
+              {
+                "name": "nextPageToken",
+                "type": "string"
+              },
+              {
+                "name": "resultSizeEstimate",
+                "type": "integer"
+              }
+            ],
+            "schema": {
+              "data": "DraftsData",
+              "result": "DraftsResult"
+            }
+          },
+          "send_draft": {
+            "endpoint": "POST /gmail/v1/users/{userId}/drafts/send",
+            "description": "Sends the specified, existing draft to the recipients in the To, Cc, and Bcc headers.",
+            "tier": "CREATE",
+            "params": [
+              {
+                "name": "userId",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "id",
+                "type": "string",
+                "required": true,
+                "description": "The ID of the existing draft to send."
+              },
+              {
+                "name": "message",
+                "type": "object",
+                "required": false,
+                "description": "Optional \u2014 the draft's message content (object (Message))."
+              }
+            ],
+            "response_fields": [],
+            "schema": {
+              "data": "SendDraftData",
+              "result": "SendDraftResult"
+            }
+          },
+          "update_draft": {
+            "endpoint": "PUT /gmail/v1/users/{userId}/drafts/{id}",
+            "description": "Replaces a draft's content entirely.",
+            "tier": "UPDATE",
+            "params": [
+              {
+                "name": "userId",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "id",
+                "type": "string",
+                "required": true,
+                "description": "The ID of the draft to update."
+              },
+              {
+                "name": "message",
+                "type": "object",
+                "required": false,
+                "description": "The replacement message content of the draft (object (Message)); since this is a full replace, send this to give the draft its new content."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "id",
+                "type": "string"
+              },
+              {
+                "name": "message",
+                "type": "object"
+              }
+            ],
+            "schema": {
+              "data": "DraftData",
+              "result": "DraftResult"
+            }
+          }
+        }
+      },
+      "labels": {
+        "file": "labels_tools.py",
+        "doc_source": "labels/*.md",
+        "register_fn": "register_labels_tools",
+        "tools": {
+          "create_label": {
+            "endpoint": "POST /gmail/v1/users/{userId}/labels",
+            "description": "Creates a label.",
+            "tier": "CREATE",
+            "params": [
+              {
+                "name": "userId",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "id",
+                "type": "string",
+                "required": false,
+                "description": "The immutable ID of the label (server-assigned; omit when creating)."
+              },
+              {
+                "name": "name",
+                "type": "string",
+                "required": true,
+                "description": "The display name of the label."
+              },
+              {
+                "name": "messageListVisibility",
+                "type": "enum (show, hide)",
+                "required": false,
+                "description": "Visibility of messages with this label in the Gmail web message list."
+              },
+              {
+                "name": "labelListVisibility",
+                "type": "enum (labelShow, labelShowIfUnread, labelHide)",
+                "required": false,
+                "description": "Visibility of the label itself in the Gmail web label list."
+              },
+              {
+                "name": "type",
+                "type": "enum (system, user)",
+                "required": false,
+                "description": "Owner type. `system` labels are internally created by Gmail and cannot be added/modified/deleted. `user` labels are created by the user/app."
+              },
+              {
+                "name": "messagesTotal",
+                "type": "integer",
+                "required": false,
+                "description": "The total number of messages with the label. Output only."
+              },
+              {
+                "name": "messagesUnread",
+                "type": "integer",
+                "required": false,
+                "description": "The number of unread messages with the label. Output only."
+              },
+              {
+                "name": "threadsTotal",
+                "type": "integer",
+                "required": false,
+                "description": "The total number of threads with the label. Output only."
+              },
+              {
+                "name": "threadsUnread",
+                "type": "integer",
+                "required": false,
+                "description": "The number of unread threads with the label. Output only."
+              },
+              {
+                "name": "color",
+                "type": "object { textColor: string, backgroundColor: string }",
+                "required": false,
+                "description": "Only available for labels with `type: user`. `textColor`/`backgroundColor` are hex strings and must both be set from Gmail's fixed palette; both fields are required together to set a label's color."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "id",
+                "type": "string"
+              },
+              {
+                "name": "name",
+                "type": "string"
+              },
+              {
+                "name": "messageListVisibility",
+                "type": "enum (show, hide)"
+              },
+              {
+                "name": "labelListVisibility",
+                "type": "enum (labelShow, labelShowIfUnread, labelHide)"
+              },
+              {
+                "name": "type",
+                "type": "enum (system, user)"
+              },
+              {
+                "name": "messagesTotal",
+                "type": "integer"
+              },
+              {
+                "name": "messagesUnread",
+                "type": "integer"
+              },
+              {
+                "name": "threadsTotal",
+                "type": "integer"
+              },
+              {
+                "name": "threadsUnread",
+                "type": "integer"
+              },
+              {
+                "name": "color.textColor",
+                "type": "string"
+              },
+              {
+                "name": "color.backgroundColor",
+                "type": "string"
+              }
+            ],
+            "schema": {
+              "data": "LabelData",
+              "result": "LabelResult"
+            }
+          },
+          "delete_label": {
+            "endpoint": "DELETE /gmail/v1/users/{userId}/labels/{id}",
+            "description": "Immediately and permanently deletes the specified label and removes it from any messages and threads it's applied to.",
+            "tier": "DELETE",
+            "params": [
+              {
+                "name": "userId",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "id",
+                "type": "string",
+                "required": true,
+                "description": "The ID of the label to delete."
+              }
+            ],
+            "response_fields": [],
+            "schema": {
+              "data": "DeleteLabelData",
+              "result": "DeleteLabelResult"
+            }
+          },
+          "get_label": {
+            "endpoint": "GET /gmail/v1/users/{userId}/labels/{id}",
+            "description": "Gets the specified label.",
+            "tier": "GET",
+            "params": [
+              {
+                "name": "userId",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "id",
+                "type": "string",
+                "required": true,
+                "description": "The ID of the label to retrieve."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "id",
+                "type": "string"
+              },
+              {
+                "name": "name",
+                "type": "string"
+              },
+              {
+                "name": "messageListVisibility",
+                "type": "enum (show, hide)"
+              },
+              {
+                "name": "labelListVisibility",
+                "type": "enum (labelShow, labelShowIfUnread, labelHide)"
+              },
+              {
+                "name": "type",
+                "type": "enum (system, user)"
+              },
+              {
+                "name": "messagesTotal",
+                "type": "integer"
+              },
+              {
+                "name": "messagesUnread",
+                "type": "integer"
+              },
+              {
+                "name": "threadsTotal",
+                "type": "integer"
+              },
+              {
+                "name": "threadsUnread",
+                "type": "integer"
+              },
+              {
+                "name": "color.textColor",
+                "type": "string"
+              },
+              {
+                "name": "color.backgroundColor",
+                "type": "string"
+              }
+            ],
+            "schema": {
+              "data": "LabelData",
+              "result": "LabelResult"
+            }
+          },
+          "list_labels": {
+            "endpoint": "GET /gmail/v1/users/{userId}/labels",
+            "description": "Lists all labels in the user's mailbox.",
+            "tier": "GET",
+            "params": [
+              {
+                "name": "userId",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "labels[].id",
+                "type": "string"
+              },
+              {
+                "name": "labels[].name",
+                "type": "string"
+              },
+              {
+                "name": "labels[].messageListVisibility",
+                "type": "enum (show, hide)"
+              },
+              {
+                "name": "labels[].labelListVisibility",
+                "type": "enum (labelShow, labelShowIfUnread, labelHide)"
+              },
+              {
+                "name": "labels[].type",
+                "type": "enum (system, user)"
+              }
+            ],
+            "schema": {
+              "data": "LabelsData",
+              "result": "LabelsResult"
+            }
+          },
+          "update_label": {
+            "endpoint": "PATCH /gmail/v1/users/{userId}/labels/{id}",
+            "description": "Partially updates the specified label (only the fields provided are changed).",
+            "tier": "UPDATE",
+            "params": [
+              {
+                "name": "userId",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "id",
+                "type": "string",
+                "required": true,
+                "description": "The ID of the label to update."
+              },
+              {
+                "name": "name",
+                "type": "string",
+                "required": false,
+                "description": "The display name of the label."
+              },
+              {
+                "name": "messageListVisibility",
+                "type": "enum (show, hide)",
+                "required": false,
+                "description": "Visibility of messages with this label in the Gmail web message list."
+              },
+              {
+                "name": "labelListVisibility",
+                "type": "enum (labelShow, labelShowIfUnread, labelHide)",
+                "required": false,
+                "description": "Visibility of the label itself in the Gmail web label list."
+              },
+              {
+                "name": "type",
+                "type": "enum (system, user)",
+                "required": false,
+                "description": "System labels cannot actually be renamed/recolored even though the field is present."
+              },
+              {
+                "name": "color",
+                "type": "object { textColor: string, backgroundColor: string }",
+                "required": false,
+                "description": "`textColor`/`backgroundColor` hex strings, from Gmail's fixed palette; both required together to set a color. Only applies to `type: user` labels."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "id",
+                "type": "string"
+              },
+              {
+                "name": "name",
+                "type": "string"
+              },
+              {
+                "name": "messageListVisibility",
+                "type": "enum (show, hide)"
+              },
+              {
+                "name": "labelListVisibility",
+                "type": "enum (labelShow, labelShowIfUnread, labelHide)"
+              },
+              {
+                "name": "type",
+                "type": "enum (system, user)"
+              },
+              {
+                "name": "messagesTotal",
+                "type": "integer"
+              },
+              {
+                "name": "messagesUnread",
+                "type": "integer"
+              },
+              {
+                "name": "threadsTotal",
+                "type": "integer"
+              },
+              {
+                "name": "threadsUnread",
+                "type": "integer"
+              },
+              {
+                "name": "color.textColor",
+                "type": "string"
+              },
+              {
+                "name": "color.backgroundColor",
+                "type": "string"
+              }
+            ],
+            "schema": {
+              "data": "LabelData",
+              "result": "LabelResult"
+            }
+          }
+        }
+      },
+      "messages": {
+        "file": "messages_tools.py",
+        "doc_source": "messages/*.md",
+        "register_fn": "register_messages_tools",
+        "tools": {
+          "batch_delete_messages": {
+            "endpoint": "POST /gmail/v1/users/{userId}/messages/batchDelete",
+            "description": "Permanently deletes many messages by message ID in one call; provides no guarantee that a message was not already deleted or ever existed.",
+            "tier": "DELETE",
+            "params": [
+              {
+                "name": "userId",
+                "in": "path",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "ids",
+                "in": "body",
+                "type": "array<string>",
+                "required": true,
+                "description": "The IDs of the messages to delete. No guarantee is given that a message wasn't already deleted or ever existed \u2014 this is a fire-and-forget bulk permanent delete, irreversible."
+              }
+            ],
+            "response_fields": [],
+            "schema": {
+              "data": "BatchDeleteMessagesData",
+              "result": "BatchDeleteMessagesResult"
+            }
+          },
+          "batch_modify_messages": {
+            "endpoint": "POST /gmail/v1/users/{userId}/messages/batchModify",
+            "description": "Adds or removes labels on the specified messages in a single bulk call.",
+            "tier": "UPDATE_MANY",
+            "params": [
+              {
+                "name": "userId",
+                "in": "path",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "ids",
+                "in": "body",
+                "type": "array<string>",
+                "required": true,
+                "description": "The IDs of the messages to modify. Limit of 1000 IDs per request."
+              },
+              {
+                "name": "addLabelIds",
+                "in": "body",
+                "type": "array<string>",
+                "required": false,
+                "description": "Label IDs to add to all specified messages."
+              },
+              {
+                "name": "removeLabelIds",
+                "in": "body",
+                "type": "array<string>",
+                "required": false,
+                "description": "Label IDs to remove from all specified messages."
+              },
+              {
+                "name": "addClassificationLabels",
+                "in": "body",
+                "type": "array<object (ClassificationLabelValue)>",
+                "required": false,
+                "description": "Classification Label values to add (Google Workspace only). Limit of 20 per message."
+              },
+              {
+                "name": "removeClassificationLabelIds",
+                "in": "body",
+                "type": "array<string>",
+                "required": false,
+                "description": "Classification Label values to remove from the messages."
+              }
+            ],
+            "response_fields": [],
+            "schema": {
+              "data": "BatchModifyMessagesData",
+              "result": "BatchModifyMessagesResult"
+            }
+          },
+          "delete_message": {
+            "endpoint": "DELETE /gmail/v1/users/{userId}/messages/{id}",
+            "description": "Immediately and permanently deletes the specified message; this cannot be undone (prefer trashing instead).",
+            "tier": "DELETE",
+            "params": [
+              {
+                "name": "userId",
+                "in": "path",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "id",
+                "in": "path",
+                "type": "string",
+                "required": true,
+                "description": "The ID of the message to delete."
+              }
+            ],
+            "response_fields": [],
+            "schema": {
+              "data": "DeleteMessageData",
+              "result": "DeleteMessageResult"
+            }
+          },
+          "get_message_attachment": {
+            "endpoint": "GET /gmail/v1/users/{userId}/messages/{messageId}/attachments/{id}",
+            "description": "Gets the specified message attachment.",
+            "tier": "GET",
+            "params": [
+              {
+                "name": "userId",
+                "in": "path",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "messageId",
+                "in": "path",
+                "type": "string",
+                "required": true,
+                "description": "The ID of the message containing the attachment."
+              },
+              {
+                "name": "id",
+                "in": "path",
+                "type": "string",
+                "required": true,
+                "description": "The ID of the attachment (from the message's `payload` \u2014 see get_message)."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "attachmentId",
+                "type": "string"
+              },
+              {
+                "name": "size",
+                "type": "integer"
+              },
+              {
+                "name": "data",
+                "type": "string"
+              }
+            ],
+            "schema": {
+              "data": "GetMessageAttachmentData",
+              "result": "GetMessageAttachmentResult"
+            }
+          },
+          "get_message": {
+            "endpoint": "GET /gmail/v1/users/{userId}/messages/{id}",
+            "description": "Gets the specified message.",
+            "tier": "GET",
+            "params": [
+              {
+                "name": "userId",
+                "in": "path",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "id",
+                "in": "path",
+                "type": "string",
+                "required": true,
+                "description": "The ID of the message to retrieve. Usually obtained from list_messages; also present in the result of messages.insert/messages.import (not scaffolded in this bundle)."
+              },
+              {
+                "name": "format",
+                "in": "query",
+                "type": "enum (Format)",
+                "required": false,
+                "description": "`minimal` (ID and labels only), `full` (default; full data parsed into `payload`, `raw` unused), `raw` (full data as base64url in `raw`, `payload` unused), `metadata` (ID, labels, and headers only). `full`/`raw` are unavailable when using the `gmail.metadata` scope."
+              },
+              {
+                "name": "metadataHeaders",
+                "in": "query",
+                "type": "array<string>",
+                "required": false,
+                "description": "When `format=METADATA`, restricts the returned headers to only those named here."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "id",
+                "type": "string"
+              },
+              {
+                "name": "threadId",
+                "type": "string"
+              },
+              {
+                "name": "labelIds",
+                "type": "array<string>"
+              },
+              {
+                "name": "snippet",
+                "type": "string"
+              },
+              {
+                "name": "historyId",
+                "type": "string"
+              },
+              {
+                "name": "internalDate",
+                "type": "string"
+              },
+              {
+                "name": "payload",
+                "type": "object (MessagePart)"
+              },
+              {
+                "name": "sizeEstimate",
+                "type": "integer"
+              },
+              {
+                "name": "raw",
+                "type": "string"
+              },
+              {
+                "name": "classificationLabelValues",
+                "type": "array<object (ClassificationLabelValue)>"
+              }
+            ],
+            "schema": {
+              "data": "GetMessageData",
+              "result": "GetMessageResult"
+            }
+          },
+          "list_messages": {
+            "endpoint": "GET /gmail/v1/users/{userId}/messages",
+            "description": "Lists the messages in the user's mailbox.",
+            "tier": "GET",
+            "params": [
+              {
+                "name": "userId",
+                "in": "path",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "maxResults",
+                "in": "query",
+                "type": "integer",
+                "required": false,
+                "description": "Maximum number of messages to return. Defaults to 100, maximum allowed is 500."
+              },
+              {
+                "name": "pageToken",
+                "in": "query",
+                "type": "string",
+                "required": false,
+                "description": "Page token to retrieve a specific page of results."
+              },
+              {
+                "name": "q",
+                "in": "query",
+                "type": "string",
+                "required": false,
+                "description": "Only return messages matching this query, in Gmail search-box syntax, e.g. \"from:someuser@example.com rfc822msgid:<somemsgid@example.com> is:unread\". Cannot be used with the `gmail.metadata` scope."
+              },
+              {
+                "name": "labelIds",
+                "in": "query",
+                "type": "array<string>",
+                "required": false,
+                "description": "Only return messages with labels matching all of the given label IDs. Messages in the same thread can have different labels."
+              },
+              {
+                "name": "includeSpamTrash",
+                "in": "query",
+                "type": "boolean",
+                "required": false,
+                "description": "Include messages from `SPAM` and `TRASH` in the results."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "messages",
+                "type": "array<object (Message)>"
+              },
+              {
+                "name": "nextPageToken",
+                "type": "string"
+              },
+              {
+                "name": "resultSizeEstimate",
+                "type": "integer"
+              }
+            ],
+            "schema": {
+              "data": "ListMessagesData",
+              "result": "ListMessagesResult"
+            }
+          },
+          "modify_message": {
+            "endpoint": "POST /gmail/v1/users/{userId}/messages/{id}/modify",
+            "description": "Adds or removes labels on the specified message.",
+            "tier": "UPDATE",
+            "params": [
+              {
+                "name": "userId",
+                "in": "path",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "id",
+                "in": "path",
+                "type": "string",
+                "required": true,
+                "description": "The ID of the message to modify."
+              },
+              {
+                "name": "addLabelIds",
+                "in": "body",
+                "type": "array<string>",
+                "required": false,
+                "description": "Label IDs to add to this message. Up to 100 per update."
+              },
+              {
+                "name": "removeLabelIds",
+                "in": "body",
+                "type": "array<string>",
+                "required": false,
+                "description": "Label IDs to remove from this message. Up to 100 per update."
+              },
+              {
+                "name": "addClassificationLabels",
+                "in": "body",
+                "type": "array<object (ClassificationLabelValue)>",
+                "required": false,
+                "description": "Classification Label values to add (Google Workspace only). Existing field IDs are updated, new ones added; limit of 20 total per message."
+              },
+              {
+                "name": "removeClassificationLabelIds",
+                "in": "body",
+                "type": "array<string>",
+                "required": false,
+                "description": "Classification Label values to remove from the message."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "id",
+                "type": "string"
+              },
+              {
+                "name": "threadId",
+                "type": "string"
+              },
+              {
+                "name": "labelIds",
+                "type": "array<string>"
+              },
+              {
+                "name": "snippet",
+                "type": "string"
+              },
+              {
+                "name": "historyId",
+                "type": "string"
+              },
+              {
+                "name": "internalDate",
+                "type": "string"
+              },
+              {
+                "name": "payload",
+                "type": "object (MessagePart)"
+              },
+              {
+                "name": "sizeEstimate",
+                "type": "integer"
+              },
+              {
+                "name": "raw",
+                "type": "string"
+              },
+              {
+                "name": "classificationLabelValues",
+                "type": "array<object (ClassificationLabelValue)>"
+              }
+            ],
+            "schema": {
+              "data": "ModifyMessageData",
+              "result": "ModifyMessageResult"
+            }
+          },
+          "send_message": {
+            "endpoint": "POST /gmail/v1/users/{userId}/messages/send",
+            "description": "Sends the specified message to the recipients in the To, Cc, and Bcc headers.",
+            "tier": "CREATE",
+            "params": [
+              {
+                "name": "userId",
+                "in": "path",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "raw",
+                "in": "body",
+                "type": "string",
+                "required": false,
+                "description": "The entire RFC 2822 message (headers + body, with `To`/`Cc`/`Bcc`/`Subject` etc. as headers), base64url-encoded \u2014 this is how a full email is supplied for sending. Not explicitly marked required by the provider docs."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "id",
+                "type": "string"
+              },
+              {
+                "name": "threadId",
+                "type": "string"
+              },
+              {
+                "name": "labelIds",
+                "type": "array<string>"
+              },
+              {
+                "name": "snippet",
+                "type": "string"
+              },
+              {
+                "name": "historyId",
+                "type": "string"
+              },
+              {
+                "name": "internalDate",
+                "type": "string"
+              },
+              {
+                "name": "payload",
+                "type": "object (MessagePart)"
+              },
+              {
+                "name": "sizeEstimate",
+                "type": "integer"
+              },
+              {
+                "name": "raw",
+                "type": "string"
+              },
+              {
+                "name": "classificationLabelValues",
+                "type": "array<object (ClassificationLabelValue)>"
+              }
+            ],
+            "schema": {
+              "data": "SendMessageData",
+              "result": "SendMessageResult"
+            }
+          },
+          "trash_message": {
+            "endpoint": "POST /gmail/v1/users/{userId}/messages/{id}/trash",
+            "description": "Moves the specified message to the trash.",
+            "tier": "UPDATE",
+            "params": [
+              {
+                "name": "userId",
+                "in": "path",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "id",
+                "in": "path",
+                "type": "string",
+                "required": true,
+                "description": "The ID of the message to trash."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "id",
+                "type": "string"
+              },
+              {
+                "name": "threadId",
+                "type": "string"
+              },
+              {
+                "name": "labelIds",
+                "type": "array<string>"
+              },
+              {
+                "name": "snippet",
+                "type": "string"
+              },
+              {
+                "name": "historyId",
+                "type": "string"
+              },
+              {
+                "name": "internalDate",
+                "type": "string"
+              },
+              {
+                "name": "payload",
+                "type": "object (MessagePart)"
+              },
+              {
+                "name": "sizeEstimate",
+                "type": "integer"
+              },
+              {
+                "name": "raw",
+                "type": "string"
+              },
+              {
+                "name": "classificationLabelValues",
+                "type": "array<object (ClassificationLabelValue)>"
+              }
+            ],
+            "schema": {
+              "data": "TrashMessageData",
+              "result": "TrashMessageResult"
+            }
+          },
+          "untrash_message": {
+            "endpoint": "POST /gmail/v1/users/{userId}/messages/{id}/untrash",
+            "description": "Removes the specified message from the trash.",
+            "tier": "UPDATE",
+            "params": [
+              {
+                "name": "userId",
+                "in": "path",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "id",
+                "in": "path",
+                "type": "string",
+                "required": true,
+                "description": "The ID of the message to remove from trash."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "id",
+                "type": "string"
+              },
+              {
+                "name": "threadId",
+                "type": "string"
+              },
+              {
+                "name": "labelIds",
+                "type": "array<string>"
+              },
+              {
+                "name": "snippet",
+                "type": "string"
+              },
+              {
+                "name": "historyId",
+                "type": "string"
+              },
+              {
+                "name": "internalDate",
+                "type": "string"
+              },
+              {
+                "name": "payload",
+                "type": "object (MessagePart)"
+              },
+              {
+                "name": "sizeEstimate",
+                "type": "integer"
+              },
+              {
+                "name": "raw",
+                "type": "string"
+              },
+              {
+                "name": "classificationLabelValues",
+                "type": "array<object (ClassificationLabelValue)>"
+              }
+            ],
+            "schema": {
+              "data": "UntrashMessageData",
+              "result": "UntrashMessageResult"
+            }
+          }
+        }
+      },
+      "threads": {
+        "file": "threads_tools.py",
+        "doc_source": "threads/*.md",
+        "register_fn": "register_threads_tools",
+        "tools": {
+          "delete_thread": {
+            "endpoint": "DELETE /gmail/v1/users/{userId}/threads/{id}",
+            "description": "Immediately and permanently deletes the specified thread and all its messages; cannot be undone (prefer trashing instead).",
+            "tier": "DELETE",
+            "params": [
+              {
+                "name": "userId",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "id",
+                "type": "string",
+                "required": true,
+                "description": "The ID of the thread to delete."
+              }
+            ],
+            "response_fields": [],
+            "schema": {
+              "data": "DeleteThreadData",
+              "result": "DeleteThreadResult"
+            }
+          },
+          "get_thread": {
+            "endpoint": "GET /gmail/v1/users/{userId}/threads/{id}",
+            "description": "Gets the specified thread.",
+            "tier": "GET",
+            "params": [
+              {
+                "name": "userId",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "id",
+                "type": "string",
+                "required": true,
+                "description": "The ID of the thread to retrieve."
+              },
+              {
+                "name": "format",
+                "type": "enum (Format)",
+                "required": false,
+                "description": "The format to return the thread's messages in: `full` (full email data, `payload` parsed; unavailable with the `gmail.metadata` scope), `metadata` (IDs, labels, and headers only), `minimal` (IDs and labels only)."
+              },
+              {
+                "name": "metadataHeaders[]",
+                "type": "string",
+                "required": false,
+                "description": "When `format=METADATA`, restricts the returned headers to only those named here."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "id",
+                "type": "string",
+                "description": "The unique ID of the thread."
+              },
+              {
+                "name": "snippet",
+                "type": "string",
+                "description": "A short part of the message text."
+              },
+              {
+                "name": "historyId",
+                "type": "string",
+                "description": "The ID of the last history record that modified this thread."
+              },
+              {
+                "name": "messages[]",
+                "type": "object (Message)",
+                "description": "The full list of messages in the thread, shaped per the `format` query param."
+              }
+            ],
+            "schema": {
+              "data": "ThreadData",
+              "result": "ThreadResult"
+            }
+          },
+          "list_threads": {
+            "endpoint": "GET /gmail/v1/users/{userId}/threads",
+            "description": "Lists the threads in the user's mailbox.",
+            "tier": "GET",
+            "params": [
+              {
+                "name": "userId",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "maxResults",
+                "type": "integer",
+                "required": false,
+                "description": "Maximum number of threads to return. Defaults to 100, maximum allowed is 500."
+              },
+              {
+                "name": "pageToken",
+                "type": "string",
+                "required": false,
+                "description": "Page token to retrieve a specific page of results."
+              },
+              {
+                "name": "q",
+                "type": "string",
+                "required": false,
+                "description": "Only return threads matching this query, in Gmail search-box syntax. Cannot be used with the `gmail.metadata` scope."
+              },
+              {
+                "name": "labelIds[]",
+                "type": "string",
+                "required": false,
+                "description": "Only return threads with labels matching all of the given label IDs."
+              },
+              {
+                "name": "includeSpamTrash",
+                "type": "boolean",
+                "required": false,
+                "description": "Include threads from `SPAM` and `TRASH` in the results."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "threads[]",
+                "type": "object (Thread)",
+                "description": "List of threads. Each entry does not contain the `messages` list."
+              },
+              {
+                "name": "nextPageToken",
+                "type": "string",
+                "description": "Token to retrieve the next page of results."
+              },
+              {
+                "name": "resultSizeEstimate",
+                "type": "integer",
+                "description": "Estimated total number of results."
+              }
+            ],
+            "schema": {
+              "data": "ThreadsData",
+              "result": "ThreadsResult"
+            }
+          },
+          "modify_thread": {
+            "endpoint": "POST /gmail/v1/users/{userId}/threads/{id}/modify",
+            "description": "Adds or removes labels applied to the thread; this affects all messages in the thread.",
+            "tier": "UPDATE",
+            "params": [
+              {
+                "name": "userId",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "id",
+                "type": "string",
+                "required": true,
+                "description": "The ID of the thread to modify."
+              },
+              {
+                "name": "addLabelIds[]",
+                "type": "string",
+                "required": false,
+                "description": "Label IDs to add to this thread (all its messages). Up to 100 per update."
+              },
+              {
+                "name": "removeLabelIds[]",
+                "type": "string",
+                "required": false,
+                "description": "Label IDs to remove from this thread (all its messages). Up to 100 per update."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "id",
+                "type": "string",
+                "description": "The unique ID of the thread."
+              },
+              {
+                "name": "snippet",
+                "type": "string",
+                "description": "A short part of the message text."
+              },
+              {
+                "name": "historyId",
+                "type": "string",
+                "description": "The ID of the last history record that modified this thread."
+              },
+              {
+                "name": "messages[]",
+                "type": "object (Message)",
+                "description": "The full list of messages in the thread (same shape as get_thread's response)."
+              }
+            ],
+            "schema": {
+              "data": "ThreadData",
+              "result": "ThreadResult"
+            }
+          },
+          "trash_thread": {
+            "endpoint": "POST /gmail/v1/users/{userId}/threads/{id}/trash",
+            "description": "Moves the specified thread, and all its messages, to the trash.",
+            "tier": "UPDATE",
+            "params": [
+              {
+                "name": "userId",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "id",
+                "type": "string",
+                "required": true,
+                "description": "The ID of the thread to trash."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "id",
+                "type": "string",
+                "description": "The unique ID of the thread."
+              },
+              {
+                "name": "snippet",
+                "type": "string",
+                "description": "A short part of the message text."
+              },
+              {
+                "name": "historyId",
+                "type": "string",
+                "description": "The ID of the last history record that modified this thread."
+              },
+              {
+                "name": "messages[]",
+                "type": "object (Message)",
+                "description": "The full list of messages in the now-trashed thread (same shape as get_thread's response)."
+              }
+            ],
+            "schema": {
+              "data": "ThreadData",
+              "result": "ThreadResult"
+            }
+          },
+          "untrash_thread": {
+            "endpoint": "POST /gmail/v1/users/{userId}/threads/{id}/untrash",
+            "description": "Removes the specified thread, and all its messages, from the trash.",
+            "tier": "UPDATE",
+            "params": [
+              {
+                "name": "userId",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "id",
+                "type": "string",
+                "required": true,
+                "description": "The ID of the thread to remove from trash."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "id",
+                "type": "string",
+                "description": "The unique ID of the thread."
+              },
+              {
+                "name": "snippet",
+                "type": "string",
+                "description": "A short part of the message text."
+              },
+              {
+                "name": "historyId",
+                "type": "string",
+                "description": "The ID of the last history record that modified this thread."
+              },
+              {
+                "name": "messages[]",
+                "type": "object (Message)",
+                "description": "The full list of messages in the now-untrashed thread (same shape as get_thread's response)."
+              }
+            ],
+            "schema": {
+              "data": "ThreadData",
+              "result": "ThreadResult"
+            }
+          }
+        }
+      },
+      "history": {
+        "file": "history_tools.py",
+        "doc_source": "list_history.md",
+        "register_fn": "register_history_tools",
+        "tools": {
+          "list_history": {
+            "endpoint": "GET /gmail/v1/users/{userId}/history",
+            "description": "Lists the history of all changes to the mailbox in chronological order (increasing historyId), for syncing local client state with the server.",
+            "tier": "GET",
+            "params": [
+              {
+                "name": "userId",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "maxResults",
+                "type": "integer",
+                "required": false,
+                "description": "Maximum number of history records to return. Defaults to 100, maximum allowed is 500."
+              },
+              {
+                "name": "pageToken",
+                "type": "string",
+                "required": false,
+                "description": "Page token to retrieve a specific page of results."
+              },
+              {
+                "name": "startHistoryId",
+                "type": "string",
+                "required": true,
+                "description": "Return history records after this `historyId` (obtained from a message's/thread's `historyId`, or a previous `list` response). History IDs increase chronologically but are not contiguous. An invalid or stale `startHistoryId` typically returns `HTTP 404` \u2014 perform a full sync if that happens. A `historyId` is usually valid for at least a week (sometimes only a few hours). No `nextPageToken` in the response means there are no updates; store the returned `historyId` for the next request."
+              },
+              {
+                "name": "labelId",
+                "type": "string",
+                "required": false,
+                "description": "Only return messages with a label matching this ID."
+              },
+              {
+                "name": "historyTypes",
+                "type": "array<enum>",
+                "required": false,
+                "description": "Restrict to these history record types. Enum values (`HistoryType`): `messageAdded`, `messageDeleted`, `labelAdded`, `labelRemoved`."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "history[]",
+                "type": "array<History>"
+              },
+              {
+                "name": "history[].id",
+                "type": "string"
+              },
+              {
+                "name": "history[].messages[]",
+                "type": "array<Message>"
+              },
+              {
+                "name": "history[].messagesAdded[].message",
+                "type": "object<Message>"
+              },
+              {
+                "name": "history[].messagesDeleted[].message",
+                "type": "object<Message>"
+              },
+              {
+                "name": "history[].labelsAdded[].message",
+                "type": "object<Message>"
+              },
+              {
+                "name": "history[].labelsAdded[].labelIds[]",
+                "type": "array<string>"
+              },
+              {
+                "name": "history[].labelsRemoved[].message",
+                "type": "object<Message>"
+              },
+              {
+                "name": "history[].labelsRemoved[].labelIds[]",
+                "type": "array<string>"
+              },
+              {
+                "name": "nextPageToken",
+                "type": "string"
+              },
+              {
+                "name": "historyId",
+                "type": "string"
+              }
+            ],
+            "schema": {
+              "data": "HistoryData",
+              "result": "HistoryResult"
+            }
+          }
+        }
+      },
+      "settings": {
+        "file": "settings_tools.py",
+        "doc_source": "settings/*.md",
+        "register_fn": "register_settings_tools",
+        "tools": {
+          "get_auto_forwarding_settings": {
+            "endpoint": "GET /gmail/v1/users/{userId}/settings/autoForwarding",
+            "description": "Gets the auto-forwarding setting for the account.",
+            "tier": "GET",
+            "params": [
+              {
+                "name": "userId",
+                "in": "path",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "enabled",
+                "type": "boolean",
+                "description": "Whether all incoming mail is automatically forwarded to another address."
+              },
+              {
+                "name": "emailAddress",
+                "type": "string",
+                "description": "Address all incoming messages are forwarded to. Must already be a verified member of the account's forwarding addresses."
+              },
+              {
+                "name": "disposition",
+                "type": "enum: dispositionUnspecified, leaveInInbox, archive, trash, markRead",
+                "description": "What Gmail does with a message in the inbox after forwarding it."
+              }
+            ],
+            "schema": {
+              "data": "AutoForwardingSettingsData",
+              "result": "AutoForwardingSettingsResult"
+            }
+          },
+          "get_vacation_settings": {
+            "endpoint": "GET /gmail/v1/users/{userId}/settings/vacation",
+            "description": "Gets the vacation responder settings.",
+            "tier": "GET",
+            "params": [
+              {
+                "name": "userId",
+                "in": "path",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "enableAutoReply",
+                "type": "boolean",
+                "description": "Whether Gmail automatically replies to messages."
+              },
+              {
+                "name": "responseSubject",
+                "type": "string",
+                "description": "Text prepended to the subject line in vacation responses. Either this or the response body must be nonempty to enable auto-replies."
+              },
+              {
+                "name": "responseBodyPlainText",
+                "type": "string",
+                "description": "Response body in plain text. If both plain-text and HTML bodies are set, HTML is used."
+              },
+              {
+                "name": "responseBodyHtml",
+                "type": "string",
+                "description": "Response body in HTML (Gmail sanitizes it before storing). Used over plain text when both are set."
+              },
+              {
+                "name": "restrictToContacts",
+                "type": "boolean",
+                "description": "Whether responses are limited to senders in the user's contacts."
+              },
+              {
+                "name": "restrictToDomain",
+                "type": "boolean",
+                "description": "Whether responses are limited to senders in the user's domain. Google Workspace only."
+              },
+              {
+                "name": "startTime",
+                "type": "string",
+                "description": "Optional start time for auto-replies (epoch ms). Replies only to messages received after this time. Must precede endTime if both are set."
+              },
+              {
+                "name": "endTime",
+                "type": "string",
+                "description": "Optional end time for auto-replies (epoch ms). Replies only to messages received before this time. Must follow startTime if both are set."
+              }
+            ],
+            "schema": {
+              "data": "VacationSettingsData",
+              "result": "VacationSettingsResult"
+            }
+          },
+          "update_vacation_settings": {
+            "endpoint": "PUT /gmail/v1/users/{userId}/settings/vacation",
+            "description": "Updates the vacation responder settings.",
+            "tier": "UPDATE",
+            "params": [
+              {
+                "name": "userId",
+                "in": "path",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "enableAutoReply",
+                "in": "body",
+                "type": "boolean",
+                "required": false,
+                "description": "Whether Gmail automatically replies to messages."
+              },
+              {
+                "name": "responseSubject",
+                "in": "body",
+                "type": "string",
+                "required": false,
+                "description": "Text prepended to the subject line in vacation responses. Either this or the response body must be nonempty to enable auto-replies."
+              },
+              {
+                "name": "responseBodyPlainText",
+                "in": "body",
+                "type": "string",
+                "required": false,
+                "description": "Response body in plain text. If both plain-text and HTML bodies are set, HTML is used."
+              },
+              {
+                "name": "responseBodyHtml",
+                "in": "body",
+                "type": "string",
+                "required": false,
+                "description": "Response body in HTML (Gmail sanitizes it before storing). Used over plain text when both are set."
+              },
+              {
+                "name": "restrictToContacts",
+                "in": "body",
+                "type": "boolean",
+                "required": false,
+                "description": "Whether responses are limited to senders in the user's contacts."
+              },
+              {
+                "name": "restrictToDomain",
+                "in": "body",
+                "type": "boolean",
+                "required": false,
+                "description": "Whether responses are limited to senders in the user's domain. Google Workspace only."
+              },
+              {
+                "name": "startTime",
+                "in": "body",
+                "type": "string",
+                "required": false,
+                "description": "Optional start time for auto-replies (epoch ms). Replies only to messages received after this time. Must precede endTime if both are set."
+              },
+              {
+                "name": "endTime",
+                "in": "body",
+                "type": "string",
+                "required": false,
+                "description": "Optional end time for auto-replies (epoch ms). Replies only to messages received before this time. Must follow startTime if both are set."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "enableAutoReply",
+                "type": "boolean",
+                "description": "Whether Gmail automatically replies to messages."
+              },
+              {
+                "name": "responseSubject",
+                "type": "string",
+                "description": "Text prepended to the subject line in vacation responses. Either this or the response body must be nonempty to enable auto-replies."
+              },
+              {
+                "name": "responseBodyPlainText",
+                "type": "string",
+                "description": "Response body in plain text. If both plain-text and HTML bodies are set, HTML is used."
+              },
+              {
+                "name": "responseBodyHtml",
+                "type": "string",
+                "description": "Response body in HTML (Gmail sanitizes it before storing). Used over plain text when both are set."
+              },
+              {
+                "name": "restrictToContacts",
+                "type": "boolean",
+                "description": "Whether responses are limited to senders in the user's contacts."
+              },
+              {
+                "name": "restrictToDomain",
+                "type": "boolean",
+                "description": "Whether responses are limited to senders in the user's domain. Google Workspace only."
+              },
+              {
+                "name": "startTime",
+                "type": "string",
+                "description": "Optional start time for auto-replies (epoch ms). Replies only to messages received after this time. Must precede endTime if both are set."
+              },
+              {
+                "name": "endTime",
+                "type": "string",
+                "description": "Optional end time for auto-replies (epoch ms). Replies only to messages received before this time. Must follow startTime if both are set."
+              }
+            ],
+            "schema": {
+              "data": "VacationSettingsData",
+              "result": "VacationSettingsResult"
+            }
+          }
+        }
+      },
+      "filters": {
+        "file": "filters_tools.py",
+        "doc_source": "filters/*.md",
+        "register_fn": "register_filters_tools",
+        "tools": {
+          "create_filter": {
+            "endpoint": "POST /gmail/v1/users/{userId}/settings/filters",
+            "description": "Creates a mail filter (an account can have a maximum of 1,000 filters).",
+            "tier": "CREATE",
+            "params": [
+              {
+                "name": "userId",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "id",
+                "type": "string",
+                "required": false,
+                "description": "The server-assigned filter ID (omit when creating)."
+              },
+              {
+                "name": "criteria",
+                "type": "object (Criteria)",
+                "required": true,
+                "description": "Matching criteria for the filter."
+              },
+              {
+                "name": "criteria.from",
+                "type": "string",
+                "required": false,
+                "description": "Sender's display name or email address."
+              },
+              {
+                "name": "criteria.to",
+                "type": "string",
+                "required": false,
+                "description": "Recipient's display name or email address (matches To/Cc/Bcc). Local part alone works case-insensitively, e.g. `example` matches `example@gmail.com`."
+              },
+              {
+                "name": "criteria.subject",
+                "type": "string",
+                "required": false,
+                "description": "Case-insensitive phrase in the subject; whitespace trimmed/collapsed."
+              },
+              {
+                "name": "criteria.query",
+                "type": "string",
+                "required": false,
+                "description": "Only match messages matching this query, in Gmail search-box syntax."
+              },
+              {
+                "name": "criteria.negatedQuery",
+                "type": "string",
+                "required": false,
+                "description": "Only match messages NOT matching this query, same syntax."
+              },
+              {
+                "name": "criteria.hasAttachment",
+                "type": "boolean",
+                "required": false,
+                "description": "Whether the message has any attachment."
+              },
+              {
+                "name": "criteria.excludeChats",
+                "type": "boolean",
+                "required": false,
+                "description": "Whether to exclude chats from the match."
+              },
+              {
+                "name": "criteria.size",
+                "type": "integer",
+                "required": false,
+                "description": "Size of the entire RFC822 message in bytes (headers + attachments), compared per sizeComparison."
+              },
+              {
+                "name": "criteria.sizeComparison",
+                "type": "enum (SizeComparison): unspecified, smaller, larger",
+                "required": false,
+                "description": "How `size` should relate to the actual message size."
+              },
+              {
+                "name": "action",
+                "type": "object (Action)",
+                "required": true,
+                "description": "Action the filter performs when criteria match."
+              },
+              {
+                "name": "action.addLabelIds[]",
+                "type": "string[]",
+                "required": false,
+                "description": "Labels to add to matching messages."
+              },
+              {
+                "name": "action.removeLabelIds[]",
+                "type": "string[]",
+                "required": false,
+                "description": "Labels to remove from matching messages."
+              },
+              {
+                "name": "action.forward",
+                "type": "string",
+                "required": false,
+                "description": "Email address to forward matching messages to, keeping the original sender in From."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "id",
+                "type": "string",
+                "description": "The server-assigned filter ID."
+              },
+              {
+                "name": "criteria",
+                "type": "object (Criteria)",
+                "description": "Matching criteria for the filter."
+              },
+              {
+                "name": "criteria.from",
+                "type": "string",
+                "description": "Sender's display name or email address."
+              },
+              {
+                "name": "criteria.to",
+                "type": "string",
+                "description": "Recipient's display name or email address."
+              },
+              {
+                "name": "criteria.subject",
+                "type": "string",
+                "description": "Case-insensitive phrase in the subject."
+              },
+              {
+                "name": "criteria.query",
+                "type": "string",
+                "description": "Only match messages matching this query."
+              },
+              {
+                "name": "criteria.negatedQuery",
+                "type": "string",
+                "description": "Only match messages NOT matching this query."
+              },
+              {
+                "name": "criteria.hasAttachment",
+                "type": "boolean",
+                "description": "Whether the message has any attachment."
+              },
+              {
+                "name": "criteria.excludeChats",
+                "type": "boolean",
+                "description": "Whether to exclude chats from the match."
+              },
+              {
+                "name": "criteria.size",
+                "type": "integer",
+                "description": "Size of the entire RFC822 message in bytes."
+              },
+              {
+                "name": "criteria.sizeComparison",
+                "type": "enum (SizeComparison): unspecified, smaller, larger",
+                "description": "How size relates to the actual message size."
+              },
+              {
+                "name": "action",
+                "type": "object (Action)",
+                "description": "Action the filter performs when criteria match."
+              },
+              {
+                "name": "action.addLabelIds[]",
+                "type": "string[]",
+                "description": "Labels to add to matching messages."
+              },
+              {
+                "name": "action.removeLabelIds[]",
+                "type": "string[]",
+                "description": "Labels to remove from matching messages."
+              },
+              {
+                "name": "action.forward",
+                "type": "string",
+                "description": "Email address to forward matching messages to."
+              }
+            ],
+            "schema": {
+              "data": "FilterData",
+              "result": "FilterResult"
+            }
+          },
+          "delete_filter": {
+            "endpoint": "DELETE /gmail/v1/users/{userId}/settings/filters/{id}",
+            "description": "Immediately and permanently deletes the specified filter.",
+            "tier": "DELETE",
+            "params": [
+              {
+                "name": "userId",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "id",
+                "type": "string",
+                "required": true,
+                "description": "The ID of the filter to delete."
+              }
+            ],
+            "response_fields": [],
+            "schema": {
+              "data": "DeleteFilterData",
+              "result": "DeleteFilterResult"
+            }
+          },
+          "get_filter": {
+            "endpoint": "GET /gmail/v1/users/{userId}/settings/filters/{id}",
+            "description": "Gets the specified filter.",
+            "tier": "GET",
+            "params": [
+              {
+                "name": "userId",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "id",
+                "type": "string",
+                "required": true,
+                "description": "The ID of the filter to fetch."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "id",
+                "type": "string",
+                "description": "The server-assigned filter ID."
+              },
+              {
+                "name": "criteria",
+                "type": "object (Criteria)",
+                "description": "Matching criteria for the filter."
+              },
+              {
+                "name": "criteria.from",
+                "type": "string",
+                "description": "Sender's display name or email address."
+              },
+              {
+                "name": "criteria.to",
+                "type": "string",
+                "description": "Recipient's display name or email address."
+              },
+              {
+                "name": "criteria.subject",
+                "type": "string",
+                "description": "Case-insensitive phrase in the subject."
+              },
+              {
+                "name": "criteria.query",
+                "type": "string",
+                "description": "Only match messages matching this query."
+              },
+              {
+                "name": "criteria.negatedQuery",
+                "type": "string",
+                "description": "Only match messages NOT matching this query."
+              },
+              {
+                "name": "criteria.hasAttachment",
+                "type": "boolean",
+                "description": "Whether the message has any attachment."
+              },
+              {
+                "name": "criteria.excludeChats",
+                "type": "boolean",
+                "description": "Whether to exclude chats from the match."
+              },
+              {
+                "name": "criteria.size",
+                "type": "integer",
+                "description": "Size of the entire RFC822 message in bytes."
+              },
+              {
+                "name": "criteria.sizeComparison",
+                "type": "enum (SizeComparison): unspecified, smaller, larger",
+                "description": "How size relates to the actual message size."
+              },
+              {
+                "name": "action",
+                "type": "object (Action)",
+                "description": "Action the filter performs when criteria match."
+              },
+              {
+                "name": "action.addLabelIds[]",
+                "type": "string[]",
+                "description": "Labels to add to matching messages."
+              },
+              {
+                "name": "action.removeLabelIds[]",
+                "type": "string[]",
+                "description": "Labels to remove from matching messages."
+              },
+              {
+                "name": "action.forward",
+                "type": "string",
+                "description": "Email address to forward matching messages to."
+              }
+            ],
+            "schema": {
+              "data": "FilterData",
+              "result": "FilterResult"
+            }
+          },
+          "list_filters": {
+            "endpoint": "GET /gmail/v1/users/{userId}/settings/filters",
+            "description": "Lists the message filters of the Gmail user.",
+            "tier": "GET",
+            "params": [
+              {
+                "name": "userId",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "filter[]",
+                "type": "object (Filter)",
+                "description": "List of the user's filters. Note the field is singular `filter`, not `filters`."
+              },
+              {
+                "name": "filter[].id",
+                "type": "string",
+                "description": "The server-assigned filter ID."
+              },
+              {
+                "name": "filter[].criteria",
+                "type": "object (Criteria)",
+                "description": "Matching criteria for the filter."
+              },
+              {
+                "name": "filter[].action",
+                "type": "object (Action)",
+                "description": "Action the filter performs when criteria match."
+              }
+            ],
+            "schema": {
+              "data": "FiltersData",
+              "result": "FiltersResult"
+            }
+          }
+        }
+      },
+      "forwarding_addresses": {
+        "file": "forwarding_addresses_tools.py",
+        "doc_source": "forwardingAddresses/*.md",
+        "register_fn": "register_forwarding_addresses_tools",
+        "tools": {
+          "get_forwarding_address": {
+            "endpoint": "GET /gmail/v1/users/{userId}/settings/forwardingAddresses/{forwardingEmail}",
+            "description": "Gets the specified forwarding address.",
+            "tier": "GET",
+            "params": [
+              {
+                "name": "userId",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "forwardingEmail",
+                "type": "string",
+                "required": true,
+                "description": "The forwarding address to retrieve."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "forwardingEmail",
+                "type": "string",
+                "description": "The email address messages can be forwarded to."
+              },
+              {
+                "name": "verificationStatus",
+                "type": "enum: verificationStatusUnspecified, accepted, pending",
+                "description": "Read-only. Whether the address has been verified and is usable for forwarding."
+              }
+            ],
+            "schema": {
+              "data": "ForwardingAddressData",
+              "result": "ForwardingAddressResult"
+            }
+          },
+          "list_forwarding_addresses": {
+            "endpoint": "GET /gmail/v1/users/{userId}/settings/forwardingAddresses",
+            "description": "Lists the forwarding addresses for the specified account.",
+            "tier": "GET",
+            "params": [
+              {
+                "name": "userId",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "forwardingAddresses[]",
+                "type": "object (ForwardingAddress)",
+                "description": "List of addresses that may be used for forwarding."
+              }
+            ],
+            "schema": {
+              "data": "ForwardingAddressesData",
+              "result": "ForwardingAddressesResult"
+            }
+          }
+        }
+      },
+      "send_as": {
+        "file": "send_as_tools.py",
+        "doc_source": "sendAs/*.md",
+        "register_fn": "register_send_as_tools",
+        "tools": {
+          "get_send_as_alias": {
+            "endpoint": "GET /gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}",
+            "description": "Gets the specified send-as alias.",
+            "tier": "GET",
+            "params": [
+              {
+                "name": "userId",
+                "in": "path",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "sendAsEmail",
+                "in": "path",
+                "type": "string",
+                "required": true,
+                "description": "The send-as alias to retrieve."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "sendAsEmail",
+                "type": "string",
+                "description": "The address that appears in the From: header for mail sent with this alias. Read-only except on create."
+              },
+              {
+                "name": "displayName",
+                "type": "string",
+                "description": "Name shown in the From: header. For custom aliases, empty means Gmail uses the primary address's name. If the admin disabled name-format changes, updates to the primary login's name silently fail."
+              },
+              {
+                "name": "replyToAddress",
+                "type": "string",
+                "description": "Optional Reply-To: address. Empty means no Reply-To: header is generated."
+              },
+              {
+                "name": "signature",
+                "type": "string",
+                "description": "Optional HTML signature added to new messages composed with this alias in the Gmail web UI (not added to already-composed mail)."
+              },
+              {
+                "name": "isPrimary",
+                "type": "boolean",
+                "description": "Read-only. Whether this is the account's primary login address \u2014 exactly one exists and it can't be removed from the send-as collection."
+              },
+              {
+                "name": "isDefault",
+                "type": "boolean",
+                "description": "Whether this is the default From: address for new messages/vacation replies. Exactly one address may be true; setting one to true flips the previous default to false."
+              },
+              {
+                "name": "treatAsAlias",
+                "type": "boolean",
+                "description": "Whether Gmail should treat this address as an alias of the primary address. Custom \"from\" aliases only."
+              },
+              {
+                "name": "smtpMsa",
+                "type": "object (SmtpMsa)",
+                "description": "Optional outbound SMTP relay for mail sent with this alias. Empty means Gmail sends directly. Custom aliases only."
+              },
+              {
+                "name": "smtpMsa.host",
+                "type": "string",
+                "description": "SMTP service hostname."
+              },
+              {
+                "name": "smtpMsa.port",
+                "type": "integer",
+                "description": "SMTP service port."
+              },
+              {
+                "name": "smtpMsa.username",
+                "type": "string",
+                "description": "Write-only \u2014 used for create/update, never returned in responses."
+              },
+              {
+                "name": "smtpMsa.password",
+                "type": "string",
+                "description": "Write-only \u2014 used for create/update, never returned in responses."
+              },
+              {
+                "name": "smtpMsa.securityMode",
+                "type": "enum: securityModeUnspecified, none, ssl, starttls",
+                "description": "Protocol securing the SMTP connection. `none` is unsecured and requires port 25."
+              },
+              {
+                "name": "verificationStatus",
+                "type": "enum: verificationStatusUnspecified, accepted, pending",
+                "description": "Read-only. Whether the address is verified for use as a send-as alias. Custom aliases only."
+              }
+            ],
+            "schema": {
+              "data": "SendAsAliasData",
+              "result": "SendAsAliasResult"
+            }
+          },
+          "list_send_as_aliases": {
+            "endpoint": "GET /gmail/v1/users/{userId}/settings/sendAs",
+            "description": "Lists the send-as aliases for the account, including the primary address and any custom \"from\" aliases.",
+            "tier": "GET",
+            "params": [
+              {
+                "name": "userId",
+                "in": "path",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "sendAs[]",
+                "type": "object (SendAs \u2014 see get_send_as_alias)",
+                "description": "List of send-as aliases, including the account's primary address and any custom \"from\" aliases."
+              }
+            ],
+            "schema": {
+              "data": "SendAsAliasesData",
+              "result": "SendAsAliasesResult"
+            }
+          },
+          "update_send_as_alias": {
+            "endpoint": "PATCH /gmail/v1/users/{userId}/settings/sendAs/{sendAsEmail}",
+            "description": "Partially updates the specified send-as alias.",
+            "tier": "UPDATE",
+            "params": [
+              {
+                "name": "userId",
+                "in": "path",
+                "type": "string",
+                "required": true,
+                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+              },
+              {
+                "name": "sendAsEmail",
+                "in": "path",
+                "type": "string",
+                "required": true,
+                "description": "The send-as alias to update."
+              },
+              {
+                "name": "displayName",
+                "in": "body",
+                "type": "string",
+                "required": false,
+                "description": "Name shown in the From: header. For custom aliases, empty means Gmail uses the primary address's name. If the admin disabled name-format changes, updates to the primary login's name silently fail."
+              },
+              {
+                "name": "replyToAddress",
+                "in": "body",
+                "type": "string",
+                "required": false,
+                "description": "Optional Reply-To: address. Empty means no Reply-To: header is generated."
+              },
+              {
+                "name": "signature",
+                "in": "body",
+                "type": "string",
+                "required": false,
+                "description": "Optional HTML signature added to new messages composed with this alias in the Gmail web UI (not added to already-composed mail)."
+              },
+              {
+                "name": "isDefault",
+                "in": "body",
+                "type": "boolean",
+                "required": false,
+                "description": "Whether this is the default From: address for new messages/vacation replies. Exactly one address may be true; setting one to true flips the previous default to false."
+              },
+              {
+                "name": "treatAsAlias",
+                "in": "body",
+                "type": "boolean",
+                "required": false,
+                "description": "Whether Gmail should treat this address as an alias of the primary address. Custom \"from\" aliases only."
+              },
+              {
+                "name": "smtpMsa",
+                "in": "body",
+                "type": "object (SmtpMsa)",
+                "required": false,
+                "description": "Optional outbound SMTP relay for mail sent with this alias. Empty means Gmail sends directly. Custom aliases only."
+              },
+              {
+                "name": "smtpMsa.host",
+                "in": "body",
+                "type": "string",
+                "required": false,
+                "description": "SMTP service hostname."
+              },
+              {
+                "name": "smtpMsa.port",
+                "in": "body",
+                "type": "integer",
+                "required": false,
+                "description": "SMTP service port."
+              },
+              {
+                "name": "smtpMsa.username",
+                "in": "body",
+                "type": "string",
+                "required": false,
+                "description": "Write-only \u2014 used for create/update, never returned in responses."
+              },
+              {
+                "name": "smtpMsa.password",
+                "in": "body",
+                "type": "string",
+                "required": false,
+                "description": "Write-only \u2014 used for create/update, never returned in responses."
+              },
+              {
+                "name": "smtpMsa.securityMode",
+                "in": "body",
+                "type": "enum: securityModeUnspecified, none, ssl, starttls",
+                "required": false,
+                "description": "Protocol securing the SMTP connection. `none` is unsecured and requires port 25."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "sendAsEmail",
+                "type": "string",
+                "description": "The address that appears in the From: header for mail sent with this alias. Read-only except on create."
+              },
+              {
+                "name": "displayName",
+                "type": "string",
+                "description": "Name shown in the From: header. For custom aliases, empty means Gmail uses the primary address's name. If the admin disabled name-format changes, updates to the primary login's name silently fail."
+              },
+              {
+                "name": "replyToAddress",
+                "type": "string",
+                "description": "Optional Reply-To: address. Empty means no Reply-To: header is generated."
+              },
+              {
+                "name": "signature",
+                "type": "string",
+                "description": "Optional HTML signature added to new messages composed with this alias in the Gmail web UI (not added to already-composed mail)."
+              },
+              {
+                "name": "isPrimary",
+                "type": "boolean",
+                "description": "Read-only. Whether this is the account's primary login address \u2014 exactly one exists and it can't be removed from the send-as collection."
+              },
+              {
+                "name": "isDefault",
+                "type": "boolean",
+                "description": "Whether this is the default From: address for new messages/vacation replies. Exactly one address may be true; setting one to true flips the previous default to false."
+              },
+              {
+                "name": "treatAsAlias",
+                "type": "boolean",
+                "description": "Whether Gmail should treat this address as an alias of the primary address. Custom \"from\" aliases only."
+              },
+              {
+                "name": "smtpMsa",
+                "type": "object (SmtpMsa)",
+                "description": "Optional outbound SMTP relay for mail sent with this alias. Empty means Gmail sends directly. Custom aliases only."
+              },
+              {
+                "name": "verificationStatus",
+                "type": "enum: verificationStatusUnspecified, accepted, pending",
+                "description": "Read-only. Whether the address is verified for use as a send-as alias. Custom aliases only."
+              }
+            ],
+            "schema": {
+              "data": "SendAsAliasData",
+              "result": "SendAsAliasResult"
+            }
+          }
+        }
+      }
+    }
+  },
   "resources": {},
   "prompts": {}
 }
