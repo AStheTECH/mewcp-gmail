@@ -79,6 +79,6 @@
   },
   "validation_rounds": 1,
   "validation_passed": true,
-  "docs_status_written": false,
+  "docs_status_written": true,
   "readme": false
 }
