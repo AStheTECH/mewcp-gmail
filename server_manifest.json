@@ -1,0 +1,13 @@
+{
+  "manifest_version": 1,
+  "server": {
+    "name": "mewcp-gmail",
+    "package": "gmail_mcp",
+    "auth": "oauth",
+    "version": "v1.0.0",
+    "api_base": "https://gmail.googleapis.com"
+  },
+  "tools": { "groups": {} },
+  "resources": {},
+  "prompts": {}
+}
