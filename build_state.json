@@ -77,8 +77,8 @@
       "update_send_as_alias.md"
     ]
   },
-  "validation_rounds": 0,
-  "validation_passed": false,
+  "validation_rounds": 1,
+  "validation_passed": true,
   "docs_status_written": false,
   "readme": false
 }
