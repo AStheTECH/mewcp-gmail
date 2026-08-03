@@ -11,6 +11,8 @@ from ..logging_utils import ToolLogger
 from ..schemas.settings import (
     AutoForwardingSettingsData,
     AutoForwardingSettingsResult,
+    UpdateVacationSettingsData,
+    UpdateVacationSettingsResult,
     VacationSettingsData,
     VacationSettingsResult,
 )
@@ -136,7 +138,7 @@ def register_settings_tools(mcp: FastMCP) -> None:
                 "received before this time. Must follow startTime if both are set."
             ),
         ),
-    ) -> VacationSettingsResult:
+    ) -> UpdateVacationSettingsResult:
         tlog = ToolLogger(logger, "update_vacation_settings")
 
         body = {
@@ -164,10 +166,13 @@ def register_settings_tools(mcp: FastMCP) -> None:
                 .execute()
             )
             tlog.success()
-            return VacationSettingsResult(
+            return UpdateVacationSettingsResult(
                 success=True,
                 statusCode=200,
-                data=VacationSettingsData(**after_data, before=VacationSettingsData(**before_data)),
+                data=UpdateVacationSettingsData(
+                    before=VacationSettingsData(**before_data),
+                    after=VacationSettingsData(**after_data),
+                ),
             )
         except Exception as exc:
-            return _handle_request_exc(VacationSettingsResult, tlog, exc)
+            return _handle_request_exc(UpdateVacationSettingsResult, tlog, exc)

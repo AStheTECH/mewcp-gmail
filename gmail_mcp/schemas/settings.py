@@ -26,11 +26,18 @@ class VacationSettingsData(BaseModel):
     restrictToDomain: bool | None = None
     startTime: str | None = None
     endTime: str | None = None
-    # Populated only by update_vacation_settings, which reports the pre-update
-    # state alongside the (top-level) post-update state. Left unset by
-    # get_vacation_settings, which only ever reports the current state.
-    before: "VacationSettingsData | None" = None
 
 
 class VacationSettingsResult(ToolResult):
     data: VacationSettingsData | None = None
+
+
+class UpdateVacationSettingsData(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    before: VacationSettingsData
+    after: VacationSettingsData
+
+
+class UpdateVacationSettingsResult(ToolResult):
+    data: UpdateVacationSettingsData | None = None
