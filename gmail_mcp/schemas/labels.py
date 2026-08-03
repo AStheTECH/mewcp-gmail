@@ -45,3 +45,14 @@ class DeleteLabelData(BaseModel):
 
 class DeleteLabelResult(ToolResult):
     data: DeleteLabelData | None = None
+
+
+class UpdateLabelData(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    before: LabelData
+    after: LabelData
+
+
+class UpdateLabelResult(ToolResult):
+    data: UpdateLabelData | None = None

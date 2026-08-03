@@ -16,6 +16,8 @@ from ..schemas.labels import (
     LabelResult,
     LabelsData,
     LabelsResult,
+    UpdateLabelData,
+    UpdateLabelResult,
 )
 from ._helpers import _err, _handle_request_exc
 
@@ -220,16 +222,16 @@ def register_labels_tools(mcp: FastMCP) -> None:
                 "set together with `color_text_color`. Only applies to `type: user` labels."
             ),
         ),
-    ) -> LabelResult:
+    ) -> UpdateLabelResult:
         tlog = ToolLogger(logger, "update_label")
 
         if not userId:
-            return _err(LabelResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
+            return _err(UpdateLabelResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
         if not id:
-            return _err(LabelResult, tlog, "VALIDATION_ERROR", "id is required", 400)
+            return _err(UpdateLabelResult, tlog, "VALIDATION_ERROR", "id is required", 400)
         if (color_text_color is None) != (color_background_color is None):
             return _err(
-                LabelResult, tlog, "VALIDATION_ERROR",
+                UpdateLabelResult, tlog, "VALIDATION_ERROR",
                 "color_text_color and color_background_color must both be set together", 400,
             )
 
@@ -250,8 +252,10 @@ def register_labels_tools(mcp: FastMCP) -> None:
             before = gmail_service.users().labels().get(userId=userId, id=id).execute()
             after = gmail_service.users().labels().patch(userId=userId, id=id, body=body).execute()
             tlog.success()
-            combined = dict(after)
-            combined["before"] = before
-            return LabelResult(success=True, statusCode=200, data=LabelData(**combined))
+            return UpdateLabelResult(
+                success=True,
+                statusCode=200,
+                data=UpdateLabelData(before=LabelData(**before), after=LabelData(**after)),
+            )
         except Exception as exc:
-            return _handle_request_exc(LabelResult, tlog, exc)
+            return _handle_request_exc(UpdateLabelResult, tlog, exc)
