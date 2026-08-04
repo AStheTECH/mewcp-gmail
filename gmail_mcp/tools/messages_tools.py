@@ -32,7 +32,7 @@ from ..schemas.messages import (
     UntrashMessageData,
     UntrashMessageResult,
 )
-from ._helpers import _err, _handle_request_exc
+from ._helpers import LABEL_ID_GUIDANCE, USER_ID_DESC, _build_mime_message, _err, _handle_request_exc
 
 logger = logging.getLogger("gmail-mcp.tools.messages")
 
@@ -54,12 +54,6 @@ def register_messages_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, openWorldHint=True),
     )
     def batch_delete_messages(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
         ids: list[str] = Field(
             description=(
                 "The IDs of the messages to delete. No guarantee is given that a message wasn't "
@@ -67,6 +61,7 @@ def register_messages_tools(mcp: FastMCP) -> None:
                 "delete, irreversible."
             )
         ),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
     ) -> BatchDeleteMessagesResult:
         tlog = ToolLogger(logger, "batch_delete_messages")
 
@@ -95,20 +90,17 @@ def register_messages_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, openWorldHint=True),
     )
     def batch_modify_messages(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
         ids: list[str] = Field(
             description="The IDs of the messages to modify. Limit of 1000 IDs per request."
         ),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
         addLabelIds: list[str] | None = Field(
-            default=None, description="Label IDs to add to all specified messages."
+            default=None,
+            description=f"Label IDs to add to all specified messages. {LABEL_ID_GUIDANCE}",
         ),
         removeLabelIds: list[str] | None = Field(
-            default=None, description="Label IDs to remove from all specified messages."
+            default=None,
+            description=f"Label IDs to remove from all specified messages. {LABEL_ID_GUIDANCE}",
         ),
         addClassificationLabels: list[dict] | None = Field(
             default=None,
@@ -157,13 +149,8 @@ def register_messages_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, openWorldHint=True),
     )
     def delete_message(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
         id: str = Field(description="The ID of the message to delete."),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
     ) -> DeleteMessageResult:
         tlog = ToolLogger(logger, "delete_message")
 
@@ -181,16 +168,11 @@ def register_messages_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
     )
     def get_message_attachment(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
         messageId: str = Field(description="The ID of the message containing the attachment."),
         id: str = Field(
             description="The ID of the attachment (from the message's `payload` — see get_message)."
         ),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
     ) -> GetMessageAttachmentResult:
         tlog = ToolLogger(logger, "get_message_attachment")
 
@@ -214,15 +196,10 @@ def register_messages_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
     )
     def get_message(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
         id: str = Field(
             description="The ID of the message to retrieve. Usually obtained from list_messages."
         ),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
         format: str | None = Field(
             default=None,
             description=(
@@ -261,12 +238,7 @@ def register_messages_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
     )
     def list_messages(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
         maxResults: int | None = Field(
             default=None,
             description="Maximum number of messages to return. Defaults to 100, maximum allowed is 500.",
@@ -327,18 +299,17 @@ def register_messages_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
     )
     def modify_message(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
         id: str = Field(description="The ID of the message to modify."),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
         addLabelIds: list[str] | None = Field(
-            default=None, description="Label IDs to add to this message. Up to 100 per update."
+            default=None,
+            description=f"Label IDs to add to this message. Up to 100 per update. {LABEL_ID_GUIDANCE}",
         ),
         removeLabelIds: list[str] | None = Field(
-            default=None, description="Label IDs to remove from this message. Up to 100 per update."
+            default=None,
+            description=(
+                f"Label IDs to remove from this message. Up to 100 per update. {LABEL_ID_GUIDANCE}"
+            ),
         ),
         addClassificationLabels: list[dict] | None = Field(
             default=None,
@@ -375,16 +346,17 @@ def register_messages_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(
         name="send_message",
-        description="Sends the specified message to the recipients in the To, Cc, and Bcc headers.",
+        description=(
+            "Sends the specified message to the recipients in the To, Cc, and Bcc headers. "
+            "Requires a hand-built, base64url-encoded RFC 2822 `raw` blob — for a plain email "
+            "or reply, use send_email or reply_to_message instead; reach for this tool only "
+            "when you need something those can't express (attachments, custom headers, "
+            "multipart bodies)."
+        ),
         annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
     )
     def send_message(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
         raw: str | None = Field(
             default=None,
             description=(
@@ -408,6 +380,113 @@ def register_messages_tools(mcp: FastMCP) -> None:
             return _handle_request_exc(SendMessageResult, tlog, exc)
 
     @mcp.tool(
+        name="send_email",
+        description=(
+            "Sends a plain email from ordinary fields (to, subject, body) — builds the RFC 2822 "
+            "message and base64url encoding internally, so you never hand-construct or encode "
+            "it yourself. For attachments, custom headers, or multipart bodies, use send_message "
+            "with a hand-built `raw` instead."
+        ),
+        annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
+    )
+    def send_email(
+        to: str = Field(description="Comma-separated recipient email address(es) for the To header."),
+        subject: str = Field(description="The email subject line."),
+        body: str = Field(description="The email body text."),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
+        cc: str | None = Field(default=None, description="Comma-separated Cc recipient email address(es)."),
+        bcc: str | None = Field(default=None, description="Comma-separated Bcc recipient email address(es)."),
+        html: bool = Field(
+            default=False, description="If true, `body` is sent as HTML instead of plain text."
+        ),
+    ) -> SendMessageResult:
+        tlog = ToolLogger(logger, "send_email")
+
+        if not to:
+            return _err(SendMessageResult, tlog, "VALIDATION_ERROR", "to is required", 400)
+        if not subject:
+            return _err(SendMessageResult, tlog, "VALIDATION_ERROR", "subject is required", 400)
+        if not body:
+            return _err(SendMessageResult, tlog, "VALIDATION_ERROR", "body is required", 400)
+
+        try:
+            gmail_service = service.get_service()
+            raw = _build_mime_message(to=to, subject=subject, body=body, cc=cc, bcc=bcc, html=html)
+            data = gmail_service.users().messages().send(userId=userId, body={"raw": raw}).execute()
+            tlog.success()
+            return SendMessageResult(success=True, statusCode=200, data=SendMessageData(**data))
+        except Exception as exc:
+            return _handle_request_exc(SendMessageResult, tlog, exc)
+
+    @mcp.tool(
+        name="reply_to_message",
+        description=(
+            "Replies to an existing message with plain body text — looks up the original "
+            "message to set the Subject, recipient, and threading headers (In-Reply-To, "
+            "References) automatically, and builds the RFC 2822/base64url encoding "
+            "internally, so you never hand-construct or encode it yourself. For attachments, "
+            "custom headers, or multipart bodies, use send_message with a hand-built `raw` "
+            "instead."
+        ),
+        annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
+    )
+    def reply_to_message(
+        message_id: str = Field(description="The ID of the message to reply to."),
+        body: str = Field(description="The reply body text."),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
+        cc: str | None = Field(default=None, description="Comma-separated Cc recipient email address(es)."),
+        bcc: str | None = Field(default=None, description="Comma-separated Bcc recipient email address(es)."),
+        html: bool = Field(
+            default=False, description="If true, `body` is sent as HTML instead of plain text."
+        ),
+    ) -> SendMessageResult:
+        tlog = ToolLogger(logger, "reply_to_message")
+
+        if not body:
+            return _err(SendMessageResult, tlog, "VALIDATION_ERROR", "body is required", 400)
+
+        try:
+            gmail_service = service.get_service()
+            original = (
+                gmail_service.users()
+                .messages()
+                .get(
+                    userId=userId,
+                    id=message_id,
+                    format="metadata",
+                    metadataHeaders=["Subject", "From", "Message-Id", "References"],
+                )
+                .execute()
+            )
+            headers = {h["name"]: h["value"] for h in original.get("payload", {}).get("headers", [])}
+            subject = headers.get("Subject", "")
+            if not subject.lower().startswith("re:"):
+                subject = f"Re: {subject}" if subject else "Re:"
+            original_message_id = headers.get("Message-Id")
+            references = " ".join(filter(None, [headers.get("References"), original_message_id]))
+
+            raw = _build_mime_message(
+                to=headers.get("From"),
+                subject=subject,
+                body=body,
+                cc=cc,
+                bcc=bcc,
+                html=html,
+                in_reply_to=original_message_id,
+                references=references or None,
+            )
+            data = (
+                gmail_service.users()
+                .messages()
+                .send(userId=userId, body={"raw": raw, "threadId": original.get("threadId")})
+                .execute()
+            )
+            tlog.success()
+            return SendMessageResult(success=True, statusCode=200, data=SendMessageData(**data))
+        except Exception as exc:
+            return _handle_request_exc(SendMessageResult, tlog, exc)
+
+    @mcp.tool(
         name="trash_message",
         description=(
             "Moves the specified message to the trash. This changes the message's labels "
@@ -420,13 +499,8 @@ def register_messages_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
     )
     def trash_message(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
         id: str = Field(description="The ID of the message to trash."),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
     ) -> TrashMessageResult:
         tlog = ToolLogger(logger, "trash_message")
 
@@ -456,13 +530,8 @@ def register_messages_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
     )
     def untrash_message(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
         id: str = Field(description="The ID of the message to remove from trash."),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
     ) -> UntrashMessageResult:
         tlog = ToolLogger(logger, "untrash_message")
 

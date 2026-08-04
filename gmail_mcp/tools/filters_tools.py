@@ -16,7 +16,7 @@ from ..schemas.filters import (
     FiltersData,
     FiltersResult,
 )
-from ._helpers import _err, _handle_request_exc
+from ._helpers import LABEL_ID_GUIDANCE, USER_ID_DESC, _err, _handle_request_exc
 
 logger = logging.getLogger("gmail-mcp.tools.filters")
 
@@ -31,12 +31,7 @@ def register_filters_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
     )
     def create_filter(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
         from_: str | None = Field(
             default=None,
             alias="from",
@@ -95,11 +90,17 @@ def register_filters_tools(mcp: FastMCP) -> None:
         ),
         addLabelIds: list[str] | None = Field(
             default=None,
-            description="Labels to add to matching messages. Maps to the filter's `action.addLabelIds`.",
+            description=(
+                f"Labels to add to matching messages. Maps to the filter's `action.addLabelIds`. "
+                f"{LABEL_ID_GUIDANCE}"
+            ),
         ),
         removeLabelIds: list[str] | None = Field(
             default=None,
-            description="Labels to remove from matching messages. Maps to the filter's `action.removeLabelIds`.",
+            description=(
+                f"Labels to remove from matching messages. Maps to the filter's "
+                f"`action.removeLabelIds`. {LABEL_ID_GUIDANCE}"
+            ),
         ),
         forward: str | None = Field(
             default=None,
@@ -172,13 +173,8 @@ def register_filters_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, openWorldHint=True),
     )
     def delete_filter(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
         id: str = Field(description="The ID of the filter to delete."),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
     ) -> DeleteFilterResult:
         tlog = ToolLogger(logger, "delete_filter")
 
@@ -199,13 +195,8 @@ def register_filters_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
     )
     def get_filter(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
         id: str = Field(description="The ID of the filter to fetch."),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
     ) -> FilterResult:
         tlog = ToolLogger(logger, "get_filter")
 
@@ -226,12 +217,7 @@ def register_filters_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
     )
     def list_filters(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
     ) -> FiltersResult:
         tlog = ToolLogger(logger, "list_filters")
 

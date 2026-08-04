@@ -9,7 +9,7 @@ from pydantic import Field
 from .. import service
 from ..logging_utils import ToolLogger
 from ..schemas.profile import ProfileData, ProfileResult
-from ._helpers import _handle_request_exc
+from ._helpers import USER_ID_DESC, _handle_request_exc
 
 logger = logging.getLogger("gmail-mcp.tools.profile")
 
@@ -25,12 +25,7 @@ def register_profile_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
     )
     def get_profile(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
     ) -> ProfileResult:
         tlog = ToolLogger(logger, "get_profile")
 

@@ -14,7 +14,7 @@ from ..schemas.forwarding_addresses import (
     ForwardingAddressesResult,
     ForwardingAddressResult,
 )
-from ._helpers import _err, _handle_request_exc
+from ._helpers import USER_ID_DESC, _err, _handle_request_exc
 
 logger = logging.getLogger("gmail-mcp.tools.forwarding_addresses")
 
@@ -27,18 +27,11 @@ def register_forwarding_addresses_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
     )
     def get_forwarding_address(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
         forwardingEmail: str = Field(description="The forwarding address to retrieve."),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
     ) -> ForwardingAddressResult:
         tlog = ToolLogger(logger, "get_forwarding_address")
 
-        if not userId:
-            return _err(ForwardingAddressResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
         if not forwardingEmail:
             return _err(
                 ForwardingAddressResult, tlog, "VALIDATION_ERROR", "forwardingEmail is required", 400
@@ -64,17 +57,9 @@ def register_forwarding_addresses_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
     )
     def list_forwarding_addresses(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
     ) -> ForwardingAddressesResult:
         tlog = ToolLogger(logger, "list_forwarding_addresses")
-
-        if not userId:
-            return _err(ForwardingAddressesResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
 
         try:
             gmail_service = service.get_service()

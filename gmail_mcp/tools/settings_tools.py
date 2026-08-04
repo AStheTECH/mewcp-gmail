@@ -16,7 +16,7 @@ from ..schemas.settings import (
     VacationSettingsData,
     VacationSettingsResult,
 )
-from ._helpers import _handle_request_exc
+from ._helpers import USER_ID_DESC, _handle_request_exc
 
 logger = logging.getLogger("gmail-mcp.tools.settings")
 
@@ -29,12 +29,7 @@ def register_settings_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
     )
     def get_auto_forwarding_settings(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
     ) -> AutoForwardingSettingsResult:
         tlog = ToolLogger(logger, "get_auto_forwarding_settings")
 
@@ -54,12 +49,7 @@ def register_settings_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
     )
     def get_vacation_settings(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
     ) -> VacationSettingsResult:
         tlog = ToolLogger(logger, "get_vacation_settings")
 
@@ -84,12 +74,7 @@ def register_settings_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
     )
     def update_vacation_settings(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
         enableAutoReply: bool | None = Field(
             default=None, description="Whether Gmail automatically replies to messages."
         ),

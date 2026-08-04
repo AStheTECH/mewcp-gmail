@@ -20,7 +20,7 @@ from ..schemas.drafts import (
     UpdateDraftData,
     UpdateDraftResult,
 )
-from ._helpers import _err, _handle_request_exc
+from ._helpers import USER_ID_DESC, _build_mime_message, _err, _handle_request_exc
 
 logger = logging.getLogger("gmail-mcp.tools.drafts")
 
@@ -29,33 +29,60 @@ def register_drafts_tools(mcp: FastMCP) -> None:
 
     @mcp.tool(
         name="create_draft",
-        description="Creates a draft with the DRAFT label.",
+        description=(
+            "Creates a draft with the DRAFT label. Give it content either with the plain "
+            "to/subject/body fields (builds the RFC 2822/base64url encoding internally — "
+            "use this for a normal draft) or with `message` (a raw Gmail Message resource "
+            "with a hand-built `raw` blob — only needed for attachments, custom headers, or "
+            "multipart bodies). If `message` is set, the plain fields below are ignored."
+        ),
         annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
     )
     def create_draft(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
         message: dict | None = Field(
             default=None,
             description=(
-                "The message content of the draft (object (Message)); send this to give "
-                "the draft its content."
+                "The message content of the draft (object (Message)) as a raw Gmail Message "
+                "resource — must include a base64url-encoded `raw` RFC 2822 blob. Only needed "
+                "for attachments, custom headers, or multipart bodies; for a normal draft use "
+                "the plain to/subject/body fields below instead and leave this unset."
             ),
+        ),
+        to: str | None = Field(
+            default=None,
+            description="Comma-separated recipient email address(es). Ignored if `message` is set.",
+        ),
+        subject: str | None = Field(
+            default=None, description="The draft's subject line. Ignored if `message` is set."
+        ),
+        body: str | None = Field(
+            default=None, description="The draft's body text. Ignored if `message` is set."
+        ),
+        cc: str | None = Field(
+            default=None, description="Comma-separated Cc recipient email address(es). Ignored if `message` is set."
+        ),
+        bcc: str | None = Field(
+            default=None, description="Comma-separated Bcc recipient email address(es). Ignored if `message` is set."
+        ),
+        html: bool = Field(
+            default=False,
+            description="If true, `body` is treated as HTML instead of plain text. Ignored if `message` is set.",
         ),
     ) -> DraftResult:
         tlog = ToolLogger(logger, "create_draft")
 
-        if not userId:
-            return _err(DraftResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
-
         try:
             gmail_service = service.get_service()
-            body = {"message": message} if message else {}
-            data = gmail_service.users().drafts().create(userId=userId, body=body).execute()
+            if message:
+                draft_message = message
+            elif to or subject or body:
+                raw = _build_mime_message(to=to, subject=subject, body=body or "", cc=cc, bcc=bcc, html=html)
+                draft_message = {"raw": raw}
+            else:
+                draft_message = None
+            request_body = {"message": draft_message} if draft_message else {}
+            data = gmail_service.users().drafts().create(userId=userId, body=request_body).execute()
             tlog.success()
             return DraftResult(success=True, statusCode=200, data=DraftData(**data))
         except Exception as exc:
@@ -74,18 +101,11 @@ def register_drafts_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, openWorldHint=True),
     )
     def delete_draft(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
         id: str = Field(description="The ID of the draft to delete."),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
     ) -> DeleteDraftResult:
         tlog = ToolLogger(logger, "delete_draft")
 
-        if not userId:
-            return _err(DeleteDraftResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
         if not id:
             return _err(DeleteDraftResult, tlog, "VALIDATION_ERROR", "id is required", 400)
 
@@ -103,13 +123,8 @@ def register_drafts_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
     )
     def get_draft(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
         id: str = Field(description="The ID of the draft to retrieve."),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
         format: str | None = Field(
             default=None,
             description=(
@@ -122,8 +137,6 @@ def register_drafts_tools(mcp: FastMCP) -> None:
     ) -> DraftResult:
         tlog = ToolLogger(logger, "get_draft")
 
-        if not userId:
-            return _err(DraftResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
         if not id:
             return _err(DraftResult, tlog, "VALIDATION_ERROR", "id is required", 400)
 
@@ -141,12 +154,7 @@ def register_drafts_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
     )
     def list_drafts(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
         maxResults: int | None = Field(
             default=None,
             description="Maximum number of drafts to return. Defaults to 100, maximum allowed is 500.",
@@ -166,9 +174,6 @@ def register_drafts_tools(mcp: FastMCP) -> None:
         ),
     ) -> DraftsResult:
         tlog = ToolLogger(logger, "list_drafts")
-
-        if not userId:
-            return _err(DraftsResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
 
         try:
             gmail_service = service.get_service()
@@ -195,13 +200,8 @@ def register_drafts_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
     )
     def send_draft(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
         id: str = Field(description="The ID of the existing draft to send."),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
         message: dict | None = Field(
             default=None,
             description="Optional — the draft's message content (object (Message)).",
@@ -209,8 +209,6 @@ def register_drafts_tools(mcp: FastMCP) -> None:
     ) -> SendDraftResult:
         tlog = ToolLogger(logger, "send_draft")
 
-        if not userId:
-            return _err(SendDraftResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
         if not id:
             return _err(SendDraftResult, tlog, "VALIDATION_ERROR", "id is required", 400)
 
@@ -234,13 +232,8 @@ def register_drafts_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
     )
     def update_draft(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
         id: str = Field(description="The ID of the draft to update."),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
         message: dict | None = Field(
             default=None,
             description=(
@@ -251,8 +244,6 @@ def register_drafts_tools(mcp: FastMCP) -> None:
     ) -> UpdateDraftResult:
         tlog = ToolLogger(logger, "update_draft")
 
-        if not userId:
-            return _err(UpdateDraftResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
         if not id:
             return _err(UpdateDraftResult, tlog, "VALIDATION_ERROR", "id is required", 400)
 

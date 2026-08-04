@@ -22,7 +22,7 @@ from ..schemas.threads import (
     UntrashThreadData,
     UntrashThreadResult,
 )
-from ._helpers import _err, _handle_request_exc
+from ._helpers import LABEL_ID_GUIDANCE, USER_ID_DESC, _err, _handle_request_exc
 
 logger = logging.getLogger("gmail-mcp.tools.threads")
 
@@ -44,18 +44,11 @@ def register_threads_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, openWorldHint=True),
     )
     def delete_thread(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
         id: str = Field(description="The ID of the thread to delete."),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
     ) -> DeleteThreadResult:
         tlog = ToolLogger(logger, "delete_thread")
 
-        if not userId:
-            return _err(DeleteThreadResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
         if not id:
             return _err(DeleteThreadResult, tlog, "VALIDATION_ERROR", "id is required", 400)
 
@@ -73,13 +66,8 @@ def register_threads_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
     )
     def get_thread(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
         id: str = Field(description="The ID of the thread to retrieve."),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
         format: str | None = Field(
             default=None,
             description=(
@@ -95,8 +83,6 @@ def register_threads_tools(mcp: FastMCP) -> None:
     ) -> ThreadResult:
         tlog = ToolLogger(logger, "get_thread")
 
-        if not userId:
-            return _err(ThreadResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
         if not id:
             return _err(ThreadResult, tlog, "VALIDATION_ERROR", "id is required", 400)
         if format is not None and format not in _VALID_FORMATS:
@@ -124,12 +110,7 @@ def register_threads_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
     )
     def list_threads(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
         maxResults: int | None = Field(
             default=None,
             description="Maximum number of threads to return. Defaults to 100, maximum allowed is 500.",
@@ -154,8 +135,6 @@ def register_threads_tools(mcp: FastMCP) -> None:
     ) -> ThreadsResult:
         tlog = ToolLogger(logger, "list_threads")
 
-        if not userId:
-            return _err(ThreadsResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
         if maxResults is not None and (maxResults < 1 or maxResults > 500):
             return _err(
                 ThreadsResult, tlog, "VALIDATION_ERROR", "maxResults must be between 1 and 500", 400
@@ -191,26 +170,25 @@ def register_threads_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
     )
     def modify_thread(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
         id: str = Field(description="The ID of the thread to modify."),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
         addLabelIds: list[str] | None = Field(
             default=None,
-            description="Label IDs to add to this thread (all its messages). Up to 100 per update.",
+            description=(
+                f"Label IDs to add to this thread (all its messages). Up to 100 per update. "
+                f"{LABEL_ID_GUIDANCE}"
+            ),
         ),
         removeLabelIds: list[str] | None = Field(
             default=None,
-            description="Label IDs to remove from this thread (all its messages). Up to 100 per update.",
+            description=(
+                f"Label IDs to remove from this thread (all its messages). Up to 100 per update. "
+                f"{LABEL_ID_GUIDANCE}"
+            ),
         ),
     ) -> ModifyThreadResult:
         tlog = ToolLogger(logger, "modify_thread")
 
-        if not userId:
-            return _err(ModifyThreadResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
         if not id:
             return _err(ModifyThreadResult, tlog, "VALIDATION_ERROR", "id is required", 400)
         if addLabelIds and len(addLabelIds) > 100:
@@ -255,18 +233,11 @@ def register_threads_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
     )
     def trash_thread(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
         id: str = Field(description="The ID of the thread to trash."),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
     ) -> TrashThreadResult:
         tlog = ToolLogger(logger, "trash_thread")
 
-        if not userId:
-            return _err(TrashThreadResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
         if not id:
             return _err(TrashThreadResult, tlog, "VALIDATION_ERROR", "id is required", 400)
 
@@ -294,18 +265,11 @@ def register_threads_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
     )
     def untrash_thread(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
         id: str = Field(description="The ID of the thread to remove from trash."),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
     ) -> UntrashThreadResult:
         tlog = ToolLogger(logger, "untrash_thread")
 
-        if not userId:
-            return _err(UntrashThreadResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
         if not id:
             return _err(UntrashThreadResult, tlog, "VALIDATION_ERROR", "id is required", 400)
 

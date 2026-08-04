@@ -9,7 +9,7 @@ from pydantic import Field
 from .. import service
 from ..logging_utils import ToolLogger
 from ..schemas.history import HistoryData, HistoryResult
-from ._helpers import _err, _handle_request_exc
+from ._helpers import USER_ID_DESC, _err, _handle_request_exc
 
 logger = logging.getLogger("gmail-mcp.tools.history")
 
@@ -25,12 +25,6 @@ def register_history_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
     )
     def list_history(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
         startHistoryId: str = Field(
             description=(
                 "Return history records after this `historyId` (obtained from a "
@@ -42,6 +36,7 @@ def register_history_tools(mcp: FastMCP) -> None:
                 "store the returned `historyId` for the next request."
             )
         ),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
         maxResults: int | None = Field(
             default=None,
             description="Maximum number of history records to return. Defaults to 100, maximum allowed is 500.",

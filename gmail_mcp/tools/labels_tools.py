@@ -19,14 +19,9 @@ from ..schemas.labels import (
     UpdateLabelData,
     UpdateLabelResult,
 )
-from ._helpers import _err, _handle_request_exc
+from ._helpers import USER_ID_DESC, _err, _handle_request_exc
 
 logger = logging.getLogger("gmail-mcp.tools.labels")
-
-_USER_ID_DESC = (
-    "The user's email address. The special value `me` can be used to indicate "
-    "the authenticated user."
-)
 
 
 def register_labels_tools(mcp: FastMCP) -> None:
@@ -37,8 +32,8 @@ def register_labels_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
     )
     def create_label(
-        userId: str = Field(description=_USER_ID_DESC),
         name: str = Field(description="The display name of the label."),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
         messageListVisibility: Literal["show", "hide"] | None = Field(
             default=None,
             description="Visibility of messages with this label in the Gmail web message list.",
@@ -73,8 +68,6 @@ def register_labels_tools(mcp: FastMCP) -> None:
     ) -> LabelResult:
         tlog = ToolLogger(logger, "create_label")
 
-        if not userId:
-            return _err(LabelResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
         if not name:
             return _err(LabelResult, tlog, "VALIDATION_ERROR", "name is required", 400)
         if (color_text_color is None) != (color_background_color is None):
@@ -116,13 +109,11 @@ def register_labels_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, openWorldHint=True),
     )
     def delete_label(
-        userId: str = Field(description=_USER_ID_DESC),
         id: str = Field(description="The ID of the label to delete."),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
     ) -> DeleteLabelResult:
         tlog = ToolLogger(logger, "delete_label")
 
-        if not userId:
-            return _err(DeleteLabelResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
         if not id:
             return _err(DeleteLabelResult, tlog, "VALIDATION_ERROR", "id is required", 400)
 
@@ -140,13 +131,11 @@ def register_labels_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
     )
     def get_label(
-        userId: str = Field(description=_USER_ID_DESC),
         id: str = Field(description="The ID of the label to retrieve."),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
     ) -> LabelResult:
         tlog = ToolLogger(logger, "get_label")
 
-        if not userId:
-            return _err(LabelResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
         if not id:
             return _err(LabelResult, tlog, "VALIDATION_ERROR", "id is required", 400)
 
@@ -164,12 +153,9 @@ def register_labels_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
     )
     def list_labels(
-        userId: str = Field(description=_USER_ID_DESC),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
     ) -> LabelsResult:
         tlog = ToolLogger(logger, "list_labels")
-
-        if not userId:
-            return _err(LabelsResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
 
         try:
             gmail_service = service.get_service()
@@ -190,8 +176,8 @@ def register_labels_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
     )
     def update_label(
-        userId: str = Field(description=_USER_ID_DESC),
         id: str = Field(description="The ID of the label to update."),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
         name: str | None = Field(default=None, description="The display name of the label."),
         messageListVisibility: Literal["show", "hide"] | None = Field(
             default=None,
@@ -225,8 +211,6 @@ def register_labels_tools(mcp: FastMCP) -> None:
     ) -> UpdateLabelResult:
         tlog = ToolLogger(logger, "update_label")
 
-        if not userId:
-            return _err(UpdateLabelResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
         if not id:
             return _err(UpdateLabelResult, tlog, "VALIDATION_ERROR", "id is required", 400)
         if (color_text_color is None) != (color_background_color is None):

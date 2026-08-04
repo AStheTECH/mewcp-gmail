@@ -16,7 +16,7 @@ from ..schemas.send_as import (
     UpdateSendAsAliasData,
     UpdateSendAsAliasResult,
 )
-from ._helpers import _err, _handle_request_exc
+from ._helpers import USER_ID_DESC, _err, _handle_request_exc
 
 logger = logging.getLogger("gmail-mcp.tools.send_as")
 
@@ -29,18 +29,11 @@ def register_send_as_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
     )
     def get_send_as_alias(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
         sendAsEmail: str = Field(description="The send-as alias to retrieve."),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
     ) -> SendAsAliasResult:
         tlog = ToolLogger(logger, "get_send_as_alias")
 
-        if not userId:
-            return _err(SendAsAliasResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
         if not sendAsEmail:
             return _err(SendAsAliasResult, tlog, "VALIDATION_ERROR", "sendAsEmail is required", 400)
 
@@ -67,17 +60,9 @@ def register_send_as_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True),
     )
     def list_send_as_aliases(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
     ) -> SendAsAliasesResult:
         tlog = ToolLogger(logger, "list_send_as_aliases")
-
-        if not userId:
-            return _err(SendAsAliasesResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
 
         try:
             gmail_service = service.get_service()
@@ -100,13 +85,8 @@ def register_send_as_tools(mcp: FastMCP) -> None:
         annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
     )
     def update_send_as_alias(
-        userId: str = Field(
-            description=(
-                "The user's email address. The special value `me` can be used to indicate "
-                "the authenticated user."
-            )
-        ),
         sendAsEmail: str = Field(description="The send-as alias to update."),
+        userId: str | None = Field(default="me", description=USER_ID_DESC),
         displayName: str | None = Field(
             default=None, description="Name shown in the From: header."
         ),
@@ -147,8 +127,6 @@ def register_send_as_tools(mcp: FastMCP) -> None:
     ) -> UpdateSendAsAliasResult:
         tlog = ToolLogger(logger, "update_send_as_alias")
 
-        if not userId:
-            return _err(UpdateSendAsAliasResult, tlog, "VALIDATION_ERROR", "userId is required", 400)
         if not sendAsEmail:
             return _err(UpdateSendAsAliasResult, tlog, "VALIDATION_ERROR", "sendAsEmail is required", 400)
 

@@ -4,7 +4,7 @@
     "name": "mewcp-gmail",
     "package": "gmail_mcp",
     "auth": "oauth",
-    "version": "v1.0.0",
+    "version": "v1.1.0",
     "api_base": "https://gmail.googleapis.com"
   },
   "tools": {
@@ -22,8 +22,9 @@
               {
                 "name": "userId",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               }
             ],
             "response_fields": [
@@ -58,20 +59,57 @@
         "tools": {
           "create_draft": {
             "endpoint": "POST /gmail/v1/users/{userId}/drafts",
-            "description": "Creates a draft with the DRAFT label.",
+            "description": "Creates a draft with the DRAFT label. Give it content either with the plain to/subject/body fields (builds the RFC 2822/base64url encoding internally — use this for a normal draft) or with `message` (a raw Gmail Message resource with a hand-built `raw` blob — only needed for attachments, custom headers, or multipart bodies). If `message` is set, the plain fields below are ignored.",
             "tier": "CREATE",
             "params": [
               {
                 "name": "userId",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "message",
                 "type": "object",
                 "required": false,
-                "description": "The message content of the draft (object (Message)); send this to give the draft its content."
+                "description": "The message content of the draft (object (Message)) as a raw Gmail Message resource — must include a base64url-encoded `raw` RFC 2822 blob. Only needed for attachments, custom headers, or multipart bodies; for a normal draft use the plain to/subject/body fields below instead and leave this unset."
+              },
+              {
+                "name": "to",
+                "type": "string",
+                "required": false,
+                "description": "Comma-separated recipient email address(es). Ignored if `message` is set."
+              },
+              {
+                "name": "subject",
+                "type": "string",
+                "required": false,
+                "description": "The draft's subject line. Ignored if `message` is set."
+              },
+              {
+                "name": "body",
+                "type": "string",
+                "required": false,
+                "description": "The draft's body text. Ignored if `message` is set."
+              },
+              {
+                "name": "cc",
+                "type": "string",
+                "required": false,
+                "description": "Comma-separated Cc recipient email address(es). Ignored if `message` is set."
+              },
+              {
+                "name": "bcc",
+                "type": "string",
+                "required": false,
+                "description": "Comma-separated Bcc recipient email address(es). Ignored if `message` is set."
+              },
+              {
+                "name": "html",
+                "type": "boolean",
+                "required": false,
+                "description": "If true, `body` is treated as HTML instead of plain text. Ignored if `message` is set."
               }
             ],
             "response_fields": [
@@ -97,8 +135,9 @@
               {
                 "name": "userId",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "id",
@@ -121,8 +160,9 @@
               {
                 "name": "userId",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "id",
@@ -160,8 +200,9 @@
               {
                 "name": "userId",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "maxResults",
@@ -215,8 +256,9 @@
               {
                 "name": "userId",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "id",
@@ -228,7 +270,7 @@
                 "name": "message",
                 "type": "object",
                 "required": false,
-                "description": "Optional \u2014 the draft's message content (object (Message))."
+                "description": "Optional — the draft's message content (object (Message))."
               }
             ],
             "response_fields": [],
@@ -245,8 +287,9 @@
               {
                 "name": "userId",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "id",
@@ -291,8 +334,9 @@
               {
                 "name": "userId",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "id",
@@ -414,8 +458,9 @@
               {
                 "name": "userId",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "id",
@@ -438,8 +483,9 @@
               {
                 "name": "userId",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "id",
@@ -507,8 +553,9 @@
               {
                 "name": "userId",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               }
             ],
             "response_fields": [
@@ -546,8 +593,9 @@
               {
                 "name": "userId",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "id",
@@ -653,15 +701,16 @@
                 "name": "userId",
                 "in": "path",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "ids",
                 "in": "body",
                 "type": "array<string>",
                 "required": true,
-                "description": "The IDs of the messages to delete. No guarantee is given that a message wasn't already deleted or ever existed \u2014 this is a fire-and-forget bulk permanent delete, irreversible."
+                "description": "The IDs of the messages to delete. No guarantee is given that a message wasn't already deleted or ever existed — this is a fire-and-forget bulk permanent delete, irreversible."
               }
             ],
             "response_fields": [],
@@ -679,8 +728,9 @@
                 "name": "userId",
                 "in": "path",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "ids",
@@ -694,14 +744,14 @@
                 "in": "body",
                 "type": "array<string>",
                 "required": false,
-                "description": "Label IDs to add to all specified messages."
+                "description": "Label IDs to add to all specified messages. System labels use fixed well-known strings (INBOX, UNREAD, SPAM, TRASH, IMPORTANT, STARRED, DRAFT, SENT, CATEGORY_PERSONAL, CATEGORY_SOCIAL, CATEGORY_PROMOTIONS, CATEGORY_UPDATES, CATEGORY_FORUMS). User-created labels use opaque IDs like `Label_8927364` — call list_labels first to resolve the correct ID; never guess or invent one."
               },
               {
                 "name": "removeLabelIds",
                 "in": "body",
                 "type": "array<string>",
                 "required": false,
-                "description": "Label IDs to remove from all specified messages."
+                "description": "Label IDs to remove from all specified messages. System labels use fixed well-known strings (INBOX, UNREAD, SPAM, TRASH, IMPORTANT, STARRED, DRAFT, SENT, CATEGORY_PERSONAL, CATEGORY_SOCIAL, CATEGORY_PROMOTIONS, CATEGORY_UPDATES, CATEGORY_FORUMS). User-created labels use opaque IDs like `Label_8927364` — call list_labels first to resolve the correct ID; never guess or invent one."
               },
               {
                 "name": "addClassificationLabels",
@@ -733,8 +783,9 @@
                 "name": "userId",
                 "in": "path",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "id",
@@ -759,8 +810,9 @@
                 "name": "userId",
                 "in": "path",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "messageId",
@@ -774,7 +826,7 @@
                 "in": "path",
                 "type": "string",
                 "required": true,
-                "description": "The ID of the attachment (from the message's `payload` \u2014 see get_message)."
+                "description": "The ID of the attachment (from the message's `payload` — see get_message)."
               }
             ],
             "response_fields": [
@@ -805,8 +857,9 @@
                 "name": "userId",
                 "in": "path",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "id",
@@ -886,8 +939,9 @@
                 "name": "userId",
                 "in": "path",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "maxResults",
@@ -953,8 +1007,9 @@
                 "name": "userId",
                 "in": "path",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "id",
@@ -968,14 +1023,14 @@
                 "in": "body",
                 "type": "array<string>",
                 "required": false,
-                "description": "Label IDs to add to this message. Up to 100 per update."
+                "description": "Label IDs to add to this message. Up to 100 per update. System labels use fixed well-known strings (INBOX, UNREAD, SPAM, TRASH, IMPORTANT, STARRED, DRAFT, SENT, CATEGORY_PERSONAL, CATEGORY_SOCIAL, CATEGORY_PROMOTIONS, CATEGORY_UPDATES, CATEGORY_FORUMS). User-created labels use opaque IDs like `Label_8927364` — call list_labels first to resolve the correct ID; never guess or invent one."
               },
               {
                 "name": "removeLabelIds",
                 "in": "body",
                 "type": "array<string>",
                 "required": false,
-                "description": "Label IDs to remove from this message. Up to 100 per update."
+                "description": "Label IDs to remove from this message. Up to 100 per update. System labels use fixed well-known strings (INBOX, UNREAD, SPAM, TRASH, IMPORTANT, STARRED, DRAFT, SENT, CATEGORY_PERSONAL, CATEGORY_SOCIAL, CATEGORY_PROMOTIONS, CATEGORY_UPDATES, CATEGORY_FORUMS). User-created labels use opaque IDs like `Label_8927364` — call list_labels first to resolve the correct ID; never guess or invent one."
               },
               {
                 "name": "addClassificationLabels",
@@ -1041,22 +1096,222 @@
           },
           "send_message": {
             "endpoint": "POST /gmail/v1/users/{userId}/messages/send",
-            "description": "Sends the specified message to the recipients in the To, Cc, and Bcc headers.",
+            "description": "Sends the specified message to the recipients in the To, Cc, and Bcc headers. Requires a hand-built, base64url-encoded RFC 2822 `raw` blob — for a plain email or reply, use send_email or reply_to_message instead; reach for this tool only when you need something those can't express (attachments, custom headers, multipart bodies).",
             "tier": "CREATE",
             "params": [
               {
                 "name": "userId",
                 "in": "path",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "raw",
                 "in": "body",
                 "type": "string",
                 "required": false,
-                "description": "The entire RFC 2822 message (headers + body, with `To`/`Cc`/`Bcc`/`Subject` etc. as headers), base64url-encoded \u2014 this is how a full email is supplied for sending. Not explicitly marked required by the provider docs."
+                "description": "The entire RFC 2822 message (headers + body, with `To`/`Cc`/`Bcc`/`Subject` etc. as headers), base64url-encoded — this is how a full email is supplied for sending. Not explicitly marked required by the provider docs."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "id",
+                "type": "string"
+              },
+              {
+                "name": "threadId",
+                "type": "string"
+              },
+              {
+                "name": "labelIds",
+                "type": "array<string>"
+              },
+              {
+                "name": "snippet",
+                "type": "string"
+              },
+              {
+                "name": "historyId",
+                "type": "string"
+              },
+              {
+                "name": "internalDate",
+                "type": "string"
+              },
+              {
+                "name": "payload",
+                "type": "object (MessagePart)"
+              },
+              {
+                "name": "sizeEstimate",
+                "type": "integer"
+              },
+              {
+                "name": "raw",
+                "type": "string"
+              },
+              {
+                "name": "classificationLabelValues",
+                "type": "array<object (ClassificationLabelValue)>"
+              }
+            ],
+            "schema": {
+              "data": "SendMessageData",
+              "result": "SendMessageResult"
+            }
+          },
+          "send_email": {
+            "endpoint": "POST /gmail/v1/users/{userId}/messages/send",
+            "description": "Sends a plain email from ordinary fields (to, subject, body) — builds the RFC 2822 message and base64url encoding internally, so you never hand-construct or encode it yourself. For attachments, custom headers, or multipart bodies, use send_message with a hand-built `raw` instead. Not a distinct upstream endpoint — a server-side wrapper around the same messages.send call as send_message.",
+            "tier": "CREATE",
+            "params": [
+              {
+                "name": "userId",
+                "in": "path",
+                "type": "string",
+                "required": false,
+                "default": "me",
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox."
+              },
+              {
+                "name": "to",
+                "in": "body",
+                "type": "string",
+                "required": true,
+                "description": "Comma-separated recipient email address(es) for the To header."
+              },
+              {
+                "name": "subject",
+                "in": "body",
+                "type": "string",
+                "required": true,
+                "description": "The email subject line."
+              },
+              {
+                "name": "body",
+                "in": "body",
+                "type": "string",
+                "required": true,
+                "description": "The email body text."
+              },
+              {
+                "name": "cc",
+                "in": "body",
+                "type": "string",
+                "required": false,
+                "description": "Comma-separated Cc recipient email address(es)."
+              },
+              {
+                "name": "bcc",
+                "in": "body",
+                "type": "string",
+                "required": false,
+                "description": "Comma-separated Bcc recipient email address(es)."
+              },
+              {
+                "name": "html",
+                "in": "body",
+                "type": "boolean",
+                "required": false,
+                "description": "If true, `body` is sent as HTML instead of plain text."
+              }
+            ],
+            "response_fields": [
+              {
+                "name": "id",
+                "type": "string"
+              },
+              {
+                "name": "threadId",
+                "type": "string"
+              },
+              {
+                "name": "labelIds",
+                "type": "array<string>"
+              },
+              {
+                "name": "snippet",
+                "type": "string"
+              },
+              {
+                "name": "historyId",
+                "type": "string"
+              },
+              {
+                "name": "internalDate",
+                "type": "string"
+              },
+              {
+                "name": "payload",
+                "type": "object (MessagePart)"
+              },
+              {
+                "name": "sizeEstimate",
+                "type": "integer"
+              },
+              {
+                "name": "raw",
+                "type": "string"
+              },
+              {
+                "name": "classificationLabelValues",
+                "type": "array<object (ClassificationLabelValue)>"
+              }
+            ],
+            "schema": {
+              "data": "SendMessageData",
+              "result": "SendMessageResult"
+            }
+          },
+          "reply_to_message": {
+            "endpoint": "POST /gmail/v1/users/{userId}/messages/send",
+            "description": "Replies to an existing message with plain body text — looks up the original message to set the Subject, recipient, and threading headers (In-Reply-To, References) automatically, and builds the RFC 2822/base64url encoding internally, so you never hand-construct or encode it yourself. For attachments, custom headers, or multipart bodies, use send_message with a hand-built `raw` instead. Not a distinct upstream endpoint — a server-side wrapper around messages.get (to read threading headers) plus the same messages.send call as send_message.",
+            "tier": "CREATE",
+            "params": [
+              {
+                "name": "userId",
+                "in": "path",
+                "type": "string",
+                "required": false,
+                "default": "me",
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox."
+              },
+              {
+                "name": "message_id",
+                "in": "body",
+                "type": "string",
+                "required": true,
+                "description": "The ID of the message to reply to."
+              },
+              {
+                "name": "body",
+                "in": "body",
+                "type": "string",
+                "required": true,
+                "description": "The reply body text."
+              },
+              {
+                "name": "cc",
+                "in": "body",
+                "type": "string",
+                "required": false,
+                "description": "Comma-separated Cc recipient email address(es)."
+              },
+              {
+                "name": "bcc",
+                "in": "body",
+                "type": "string",
+                "required": false,
+                "description": "Comma-separated Bcc recipient email address(es)."
+              },
+              {
+                "name": "html",
+                "in": "body",
+                "type": "boolean",
+                "required": false,
+                "description": "If true, `body` is sent as HTML instead of plain text."
               }
             ],
             "response_fields": [
@@ -1115,8 +1370,9 @@
                 "name": "userId",
                 "in": "path",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "id",
@@ -1182,8 +1438,9 @@
                 "name": "userId",
                 "in": "path",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "id",
@@ -1255,8 +1512,9 @@
               {
                 "name": "userId",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "id",
@@ -1279,8 +1537,9 @@
               {
                 "name": "userId",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "id",
@@ -1336,8 +1595,9 @@
               {
                 "name": "userId",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "maxResults",
@@ -1400,8 +1660,9 @@
               {
                 "name": "userId",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "id",
@@ -1413,13 +1674,13 @@
                 "name": "addLabelIds[]",
                 "type": "string",
                 "required": false,
-                "description": "Label IDs to add to this thread (all its messages). Up to 100 per update."
+                "description": "Label IDs to add to this thread (all its messages). Up to 100 per update. System labels use fixed well-known strings (INBOX, UNREAD, SPAM, TRASH, IMPORTANT, STARRED, DRAFT, SENT, CATEGORY_PERSONAL, CATEGORY_SOCIAL, CATEGORY_PROMOTIONS, CATEGORY_UPDATES, CATEGORY_FORUMS). User-created labels use opaque IDs like `Label_8927364` — call list_labels first to resolve the correct ID; never guess or invent one."
               },
               {
                 "name": "removeLabelIds[]",
                 "type": "string",
                 "required": false,
-                "description": "Label IDs to remove from this thread (all its messages). Up to 100 per update."
+                "description": "Label IDs to remove from this thread (all its messages). Up to 100 per update. System labels use fixed well-known strings (INBOX, UNREAD, SPAM, TRASH, IMPORTANT, STARRED, DRAFT, SENT, CATEGORY_PERSONAL, CATEGORY_SOCIAL, CATEGORY_PROMOTIONS, CATEGORY_UPDATES, CATEGORY_FORUMS). User-created labels use opaque IDs like `Label_8927364` — call list_labels first to resolve the correct ID; never guess or invent one."
               }
             ],
             "response_fields": [
@@ -1457,8 +1718,9 @@
               {
                 "name": "userId",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "id",
@@ -1502,8 +1764,9 @@
               {
                 "name": "userId",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "id",
@@ -1554,8 +1817,9 @@
               {
                 "name": "userId",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "maxResults",
@@ -1573,7 +1837,7 @@
                 "name": "startHistoryId",
                 "type": "string",
                 "required": true,
-                "description": "Return history records after this `historyId` (obtained from a message's/thread's `historyId`, or a previous `list` response). History IDs increase chronologically but are not contiguous. An invalid or stale `startHistoryId` typically returns `HTTP 404` \u2014 perform a full sync if that happens. A `historyId` is usually valid for at least a week (sometimes only a few hours). No `nextPageToken` in the response means there are no updates; store the returned `historyId` for the next request."
+                "description": "Return history records after this `historyId` (obtained from a message's/thread's `historyId`, or a previous `list` response). History IDs increase chronologically but are not contiguous. An invalid or stale `startHistoryId` typically returns `HTTP 404` — perform a full sync if that happens. A `historyId` is usually valid for at least a week (sometimes only a few hours). No `nextPageToken` in the response means there are no updates; store the returned `historyId` for the next request."
               },
               {
                 "name": "labelId",
@@ -1655,8 +1919,9 @@
                 "name": "userId",
                 "in": "path",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               }
             ],
             "response_fields": [
@@ -1690,8 +1955,9 @@
                 "name": "userId",
                 "in": "path",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               }
             ],
             "response_fields": [
@@ -1750,8 +2016,9 @@
                 "name": "userId",
                 "in": "path",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "enableAutoReply",
@@ -1872,8 +2139,9 @@
               {
                 "name": "userId",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "id",
@@ -1951,13 +2219,13 @@
                 "name": "action.addLabelIds[]",
                 "type": "string[]",
                 "required": false,
-                "description": "Labels to add to matching messages."
+                "description": "Labels to add to matching messages. System labels use fixed well-known strings (INBOX, UNREAD, SPAM, TRASH, IMPORTANT, STARRED, DRAFT, SENT, CATEGORY_PERSONAL, CATEGORY_SOCIAL, CATEGORY_PROMOTIONS, CATEGORY_UPDATES, CATEGORY_FORUMS). User-created labels use opaque IDs like `Label_8927364` — call list_labels first to resolve the correct ID; never guess or invent one."
               },
               {
                 "name": "action.removeLabelIds[]",
                 "type": "string[]",
                 "required": false,
-                "description": "Labels to remove from matching messages."
+                "description": "Labels to remove from matching messages. System labels use fixed well-known strings (INBOX, UNREAD, SPAM, TRASH, IMPORTANT, STARRED, DRAFT, SENT, CATEGORY_PERSONAL, CATEGORY_SOCIAL, CATEGORY_PROMOTIONS, CATEGORY_UPDATES, CATEGORY_FORUMS). User-created labels use opaque IDs like `Label_8927364` — call list_labels first to resolve the correct ID; never guess or invent one."
               },
               {
                 "name": "action.forward",
@@ -2056,8 +2324,9 @@
               {
                 "name": "userId",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "id",
@@ -2080,8 +2349,9 @@
               {
                 "name": "userId",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "id",
@@ -2180,8 +2450,9 @@
               {
                 "name": "userId",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               }
             ],
             "response_fields": [
@@ -2226,8 +2497,9 @@
               {
                 "name": "userId",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "forwardingEmail",
@@ -2261,8 +2533,9 @@
               {
                 "name": "userId",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               }
             ],
             "response_fields": [
@@ -2293,8 +2566,9 @@
                 "name": "userId",
                 "in": "path",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "sendAsEmail",
@@ -2328,7 +2602,7 @@
               {
                 "name": "isPrimary",
                 "type": "boolean",
-                "description": "Read-only. Whether this is the account's primary login address \u2014 exactly one exists and it can't be removed from the send-as collection."
+                "description": "Read-only. Whether this is the account's primary login address — exactly one exists and it can't be removed from the send-as collection."
               },
               {
                 "name": "isDefault",
@@ -2358,12 +2632,12 @@
               {
                 "name": "smtpMsa.username",
                 "type": "string",
-                "description": "Write-only \u2014 used for create/update, never returned in responses."
+                "description": "Write-only — used for create/update, never returned in responses."
               },
               {
                 "name": "smtpMsa.password",
                 "type": "string",
-                "description": "Write-only \u2014 used for create/update, never returned in responses."
+                "description": "Write-only — used for create/update, never returned in responses."
               },
               {
                 "name": "smtpMsa.securityMode",
@@ -2390,14 +2664,15 @@
                 "name": "userId",
                 "in": "path",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               }
             ],
             "response_fields": [
               {
                 "name": "sendAs[]",
-                "type": "object (SendAs \u2014 see get_send_as_alias)",
+                "type": "object (SendAs — see get_send_as_alias)",
                 "description": "List of send-as aliases, including the account's primary address and any custom \"from\" aliases."
               }
             ],
@@ -2415,8 +2690,9 @@
                 "name": "userId",
                 "in": "path",
                 "type": "string",
-                "required": true,
-                "description": "The user's email address. The special value `me` can be used to indicate the authenticated user."
+                "required": false,
+                "description": "The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — only override this if the token has delegated access to another mailbox.",
+                "default": "me"
               },
               {
                 "name": "sendAsEmail",
@@ -2486,14 +2762,14 @@
                 "in": "body",
                 "type": "string",
                 "required": false,
-                "description": "Write-only \u2014 used for create/update, never returned in responses."
+                "description": "Write-only — used for create/update, never returned in responses."
               },
               {
                 "name": "smtpMsa.password",
                 "in": "body",
                 "type": "string",
                 "required": false,
-                "description": "Write-only \u2014 used for create/update, never returned in responses."
+                "description": "Write-only — used for create/update, never returned in responses."
               },
               {
                 "name": "smtpMsa.securityMode",
@@ -2527,7 +2803,7 @@
               {
                 "name": "isPrimary",
                 "type": "boolean",
-                "description": "Read-only. Whether this is the account's primary login address \u2014 exactly one exists and it can't be removed from the send-as collection."
+                "description": "Read-only. Whether this is the account's primary login address — exactly one exists and it can't be removed from the send-as collection."
               },
               {
                 "name": "isDefault",
