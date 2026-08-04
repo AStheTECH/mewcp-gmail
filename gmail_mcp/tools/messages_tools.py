@@ -383,9 +383,9 @@ def register_messages_tools(mcp: FastMCP) -> None:
         name="send_email",
         description=(
             "Sends a plain email from ordinary fields (to, subject, body) — builds the RFC 2822 "
-            "message and base64url encoding internally, so you never hand-construct or encode "
-            "it yourself. For attachments, custom headers, or multipart bodies, use send_message "
-            "with a hand-built `raw` instead."
+            "message and base64url encoding internally, so you don't need to hand-construct or "
+            "encode it yourself. For attachments, custom headers, or multipart bodies, use "
+            "send_message with a hand-built `raw` instead."
         ),
         annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
     )
@@ -424,9 +424,9 @@ def register_messages_tools(mcp: FastMCP) -> None:
             "Replies to an existing message with plain body text — looks up the original "
             "message to set the Subject, recipient, and threading headers (In-Reply-To, "
             "References) automatically, and builds the RFC 2822/base64url encoding "
-            "internally, so you never hand-construct or encode it yourself. For attachments, "
-            "custom headers, or multipart bodies, use send_message with a hand-built `raw` "
-            "instead."
+            "internally, so you don't need to hand-construct or encode it yourself. For "
+            "attachments, custom headers, or multipart bodies, use send_message with a "
+            "hand-built `raw` instead."
         ),
         annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
     )

@@ -11,7 +11,7 @@ from ..schemas import ToolError
 
 USER_ID_DESC = (
     "The user's email address. Defaults to `me`, which refers to the authenticated user "
-    "and is correct for almost every call — only override this if the token has delegated "
+    "and is correct for almost every call — set this only if the token has delegated "
     "access to another mailbox."
 )
 
@@ -19,8 +19,8 @@ LABEL_ID_GUIDANCE = (
     "System labels use fixed well-known strings (INBOX, UNREAD, SPAM, TRASH, IMPORTANT, "
     "STARRED, DRAFT, SENT, CATEGORY_PERSONAL, CATEGORY_SOCIAL, CATEGORY_PROMOTIONS, "
     "CATEGORY_UPDATES, CATEGORY_FORUMS). User-created labels use opaque IDs like "
-    "`Label_8927364` — call list_labels first to resolve the correct ID; never guess or "
-    "invent one."
+    "`Label_8927364` — call list_labels first to resolve the correct ID rather than "
+    "guessing or inventing one."
 )
 
 
