@@ -1,4 +1,4 @@
-**Full programmatic control of Gmail — messages, threads, drafts, labels, filters, and settings — through 41 tools.**
+**Full programmatic control of Gmail — messages, threads, drafts, labels, filters, and settings — through 43 tools.**
 
 A Model Context Protocol (MCP) server that exposes Gmail's API for reading, sending, and organizing mail, and for managing the mailbox's labels, filters, drafts, and settings.
 
@@ -31,7 +31,7 @@ Gets the current user's Gmail profile, returning mailbox email address, message/
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 ```
 
 **Output `data` schema:**
@@ -53,12 +53,18 @@ Gets the current user's Gmail profile, returning mailbox email address, message/
 <details>
 <summary><code>create_draft</code> — Create a new draft</summary>
 
-Creates a draft with the DRAFT label.
+Creates a draft with the DRAFT label. Give it content either with the plain to/subject/body fields (builds the RFC 2822/base64url encoding internally — use this for a normal draft) or with `message` (a raw Gmail Message resource with a hand-built `raw` blob — only needed for attachments, custom headers, or multipart bodies). If `message` is set, the plain fields below are ignored.
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
-- `message` (object, optional) — The message content of the draft (object (Message)); send this to give the draft its content.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
+- `message` (object, optional) — The message content of the draft (object (Message)) as a raw Gmail Message resource — must include a base64url-encoded `raw` RFC 2822 blob. Only needed for attachments, custom headers, or multipart bodies; for a normal draft use the plain to/subject/body fields below instead and leave this unset.
+- `to` (string, optional) — Comma-separated recipient email address(es). Ignored if `message` is set.
+- `subject` (string, optional) — The draft's subject line. Ignored if `message` is set.
+- `body` (string, optional) — The draft's body text. Ignored if `message` is set.
+- `cc` (string, optional) — Comma-separated Cc recipient email address(es). Ignored if `message` is set.
+- `bcc` (string, optional) — Comma-separated Bcc recipient email address(es). Ignored if `message` is set.
+- `html` (boolean, optional) — If true, `body` is treated as HTML instead of plain text. Ignored if `message` is set.
 ```
 
 **Output `data` schema:**
@@ -80,7 +86,7 @@ DESTRUCTIVE — REQUIRES EXPLICIT USER CONFIRMATION BEFORE CALLING. Immediately 
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `id` (string, required) — The ID of the draft to delete.
 ```
 
@@ -100,7 +106,7 @@ Gets the specified draft.
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `id` (string, required) — The ID of the draft to retrieve.
 - `format` (string, optional) — The format to return the draft's message in: `minimal` (ID and labels only), `full` (full data, parsed into `payload`), `raw` (full data as a base64url string in `raw`; `payload` unused), `metadata` (ID, labels, and headers only). `full`/`raw` are unavailable when using the `gmail.metadata` scope.
 ```
@@ -124,7 +130,7 @@ Lists the drafts in the user's mailbox.
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `maxResults` (integer, optional) — Maximum number of drafts to return. Defaults to 100, maximum allowed is 500.
 - `pageToken` (string, optional) — Page token to retrieve a specific page of results.
 - `q` (string, optional) — Only return drafts matching this query, in Gmail search-box syntax, e.g. `"from:someuser@example.com rfc822msgid:<somemsgid@example.com> is:unread"`.
@@ -154,7 +160,7 @@ Sends the specified, existing draft to the recipients in the To, Cc, and Bcc hea
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `id` (string, required) — The ID of the existing draft to send.
 - `message` (object, optional) — Optional — the draft's message content (object (Message)).
 ```
@@ -175,7 +181,7 @@ NOTE: this tool first fetches the draft's current state, then replaces it — th
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `id` (string, required) — The ID of the draft to update.
 - `message` (object, optional) — The replacement message content of the draft (object (Message)); since this is a full replace, send this to give the draft its new content.
 ```
@@ -207,7 +213,7 @@ Creates a label.
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `name` (string, required) — The display name of the label.
 - `messageListVisibility` (enum: show, hide, optional) — Visibility of messages with this label in the Gmail web message list.
 - `labelListVisibility` (enum: labelShow, labelShowIfUnread, labelHide, optional) — Visibility of the label itself in the Gmail web label list.
@@ -246,7 +252,7 @@ DESTRUCTIVE — REQUIRES EXPLICIT USER CONFIRMATION BEFORE CALLING. Immediately 
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `id` (string, required) — The ID of the label to delete.
 ```
 
@@ -266,7 +272,7 @@ Gets the specified label.
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `id` (string, required) — The ID of the label to retrieve.
 ```
 
@@ -300,7 +306,7 @@ Lists all labels in the user's mailbox.
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 ```
 
 **Output `data` schema:**
@@ -335,7 +341,7 @@ NOTE: this overwrites the current field values — the original state is not sto
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `id` (string, required) — The ID of the label to update.
 - `name` (string, optional) — The display name of the label.
 - `messageListVisibility` (enum: show, hide, optional) — Visibility of messages with this label in the Gmail web message list.
@@ -388,7 +394,7 @@ DESTRUCTIVE — REQUIRES EXPLICIT USER CONFIRMATION BEFORE CALLING. Permanently 
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `ids` (string[], required) — The IDs of the messages to delete. No guarantee is given that a message wasn't already deleted or ever existed — this is a fire-and-forget bulk permanent delete, irreversible.
 ```
 
@@ -408,7 +414,7 @@ DESTRUCTIVE — REQUIRES EXPLICIT USER CONFIRMATION BEFORE CALLING. Adds or remo
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `ids` (string[], required) — The IDs of the messages to modify. Limit of 1000 IDs per request.
 - `addLabelIds` (string[], optional) — Label IDs to add to all specified messages.
 - `removeLabelIds` (string[], optional) — Label IDs to remove from all specified messages.
@@ -432,7 +438,7 @@ DESTRUCTIVE — REQUIRES EXPLICIT USER CONFIRMATION BEFORE CALLING. Immediately 
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `id` (string, required) — The ID of the message to delete.
 ```
 
@@ -452,7 +458,7 @@ Gets the specified message attachment.
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `messageId` (string, required) — The ID of the message containing the attachment.
 - `id` (string, required) — The ID of the attachment (from the message's `payload` — see get_message).
 ```
@@ -477,7 +483,7 @@ Gets the specified message.
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `id` (string, required) — The ID of the message to retrieve. Usually obtained from list_messages.
 - `format` (string, optional) — `minimal` (ID and labels only), `full` (default; full data parsed into `payload`, `raw` unused), `raw` (full data as base64url in `raw`, `payload` unused), `metadata` (ID, labels, and headers only). `full`/`raw` are unavailable when using the `gmail.metadata` scope.
 - `metadataHeaders` (string[], optional) — When `format=METADATA`, restricts the returned headers to only those named here.
@@ -510,7 +516,7 @@ Lists the messages in the user's mailbox.
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `maxResults` (integer, optional) — Maximum number of messages to return. Defaults to 100, maximum allowed is 500.
 - `pageToken` (string, optional) — Page token to retrieve a specific page of results.
 - `q` (string, optional) — Only return messages matching this query, in Gmail search-box syntax. Cannot be used with the `gmail.metadata` scope.
@@ -549,7 +555,7 @@ Updates the specified message's labels. Only the label additions/removals you pr
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `id` (string, required) — The ID of the message to modify.
 - `addLabelIds` (string[], optional) — Label IDs to add to this message. Up to 100 per update.
 - `removeLabelIds` (string[], optional) — Label IDs to remove from this message. Up to 100 per update.
@@ -594,12 +600,83 @@ Updates the specified message's labels. Only the label additions/removals you pr
 <details>
 <summary><code>send_message</code> — Send a raw RFC 2822 message</summary>
 
-Sends the specified message to the recipients in the To, Cc, and Bcc headers.
+Sends the specified message to the recipients in the To, Cc, and Bcc headers. Requires a hand-built, base64url-encoded RFC 2822 `raw` blob — for a plain email or reply, use send_email or reply_to_message instead; reach for this tool only when you need something those can't express (attachments, custom headers, multipart bodies).
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `raw` (string, optional) — The entire RFC 2822 message (headers + body, with `To`/`Cc`/`Bcc`/`Subject` etc. as headers), base64url-encoded. Not explicitly marked required by the provider docs but practically necessary to send anything.
+```
+
+**Output `data` schema:**
+
+```typescript
+{
+  id: string | null;
+  threadId: string | null;
+  labelIds: string[] | null;
+  snippet: string | null;
+  historyId: string | null;
+  internalDate: string | null;
+  payload: object | null;
+  sizeEstimate: number | null;
+  raw: string | null;
+  classificationLabelValues: object[] | null;
+}
+```
+
+</details>
+
+
+<details>
+<summary><code>send_email</code> — Send a plain email from to/subject/body</summary>
+
+Sends a plain email from ordinary fields (to, subject, body) — builds the RFC 2822 message and base64url encoding internally, so you don't need to hand-construct or encode it yourself. For attachments, custom headers, or multipart bodies, use send_message with a hand-built `raw` instead.
+
+**Inputs:**
+```
+- `to` (string, required) — Comma-separated recipient email address(es) for the To header.
+- `subject` (string, required) — The email subject line.
+- `body` (string, required) — The email body text.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
+- `cc` (string, optional) — Comma-separated Cc recipient email address(es).
+- `bcc` (string, optional) — Comma-separated Bcc recipient email address(es).
+- `html` (boolean, optional) — If true, `body` is sent as HTML instead of plain text.
+```
+
+**Output `data` schema:**
+
+```typescript
+{
+  id: string | null;
+  threadId: string | null;
+  labelIds: string[] | null;
+  snippet: string | null;
+  historyId: string | null;
+  internalDate: string | null;
+  payload: object | null;
+  sizeEstimate: number | null;
+  raw: string | null;
+  classificationLabelValues: object[] | null;
+}
+```
+
+</details>
+
+
+<details>
+<summary><code>reply_to_message</code> — Reply to an existing message with plain text</summary>
+
+Replies to an existing message with plain body text — looks up the original message to set the Subject, recipient, and threading headers (In-Reply-To, References) automatically, and builds the RFC 2822/base64url encoding internally, so you don't need to hand-construct or encode it yourself. For attachments, custom headers, or multipart bodies, use send_message with a hand-built `raw` instead.
+
+**Inputs:**
+```
+- `message_id` (string, required) — The ID of the message to reply to.
+- `body` (string, required) — The reply body text.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
+- `cc` (string, optional) — Comma-separated Cc recipient email address(es).
+- `bcc` (string, optional) — Comma-separated Bcc recipient email address(es).
+- `html` (boolean, optional) — If true, `body` is sent as HTML instead of plain text.
 ```
 
 **Output `data` schema:**
@@ -625,11 +702,11 @@ Sends the specified message to the recipients in the To, Cc, and Bcc headers.
 <details>
 <summary><code>trash_message</code> — Move a message to trash</summary>
 
-Moves the specified message to the trash. This changes the message's labels (typically adding TRASH and removing INBOX) — everything else about the message keeps its current value. NOTE: this overwrites the current label state — the original state is not stored after the call. The response includes both the before and after state of the message so you have a full record of what changed. Moves the specified message to the trash.
+Moves the specified message to the trash. This changes the message's labels (typically adding TRASH and removing INBOX) — everything else about the message keeps its current value. NOTE: this overwrites the current label state — the original state is not stored after the call. The response includes both the before and after state of the message so you have a full record of what changed.
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `id` (string, required) — The ID of the message to trash.
 ```
 
@@ -670,11 +747,11 @@ Moves the specified message to the trash. This changes the message's labels (typ
 <details>
 <summary><code>untrash_message</code> — Remove a message from trash</summary>
 
-Removes the specified message from the trash. This changes the message's labels (typically removing TRASH) — everything else about the message keeps its current value. NOTE: this overwrites the current label state — the original state is not stored after the call. The response includes both the before and after state of the message so you have a full record of what changed. Removes the specified message from the trash.
+Removes the specified message from the trash. This changes the message's labels (typically removing TRASH) — everything else about the message keeps its current value. NOTE: this overwrites the current label state — the original state is not stored after the call. The response includes both the before and after state of the message so you have a full record of what changed.
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `id` (string, required) — The ID of the message to remove from trash.
 ```
 
@@ -721,7 +798,7 @@ DESTRUCTIVE — REQUIRES EXPLICIT USER CONFIRMATION BEFORE CALLING. Immediately 
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `id` (string, required) — The ID of the thread to delete.
 ```
 
@@ -741,7 +818,7 @@ Gets the specified thread.
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `id` (string, required) — The ID of the thread to retrieve.
 - `format` (string, optional) — The format to return the thread's messages in: `full` (full email data, `payload` parsed; unavailable with the `gmail.metadata` scope), `metadata` (IDs, labels, and headers only), `minimal` (IDs and labels only).
 - `metadataHeaders` (string[], optional) — When `format=METADATA`, restricts the returned headers to only those named here.
@@ -768,7 +845,7 @@ Lists the threads in the user's mailbox.
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `maxResults` (integer, optional) — Maximum number of threads to return. Defaults to 100, maximum allowed is 500.
 - `pageToken` (string, optional) — Page token to retrieve a specific page of results.
 - `q` (string, optional) — Only return threads matching this query, in Gmail search-box syntax. Cannot be used with the `gmail.metadata` scope.
@@ -801,7 +878,7 @@ NOTE: this changes label state on the thread (all its messages) immediately — 
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `id` (string, required) — The ID of the thread to modify.
 - `addLabelIds` (string[], optional) — Label IDs to add to this thread (all its messages). Up to 100 per update.
 - `removeLabelIds` (string[], optional) — Label IDs to remove from this thread (all its messages). Up to 100 per update.
@@ -836,7 +913,7 @@ NOTE: this moves the thread (all its messages) to trash immediately — the orig
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `id` (string, required) — The ID of the thread to trash.
 ```
 
@@ -869,7 +946,7 @@ NOTE: this removes the thread (all its messages) from trash immediately — the 
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `id` (string, required) — The ID of the thread to remove from trash.
 ```
 
@@ -904,7 +981,7 @@ Lists the history of all changes to the mailbox in chronological order (increasi
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `startHistoryId` (string, required) — Return history records after this `historyId` (obtained from a message's/thread's `historyId`, or a previous `list` response). History IDs increase chronologically but are not contiguous. An invalid or stale `startHistoryId` typically returns `HTTP 404` — perform a full sync if that happens. A `historyId` is usually valid for at least a week (sometimes only a few hours). No `nextPageToken` in the response means there are no updates; store the returned `historyId` for the next request.
 - `maxResults` (integer, optional) — Maximum number of history records to return. Defaults to 100, maximum allowed is 500.
 - `pageToken` (string, optional) — Page token to retrieve a specific page of results.
@@ -941,7 +1018,7 @@ Gets the auto-forwarding setting for the account.
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 ```
 
 **Output `data` schema:**
@@ -964,7 +1041,7 @@ Gets the vacation responder settings.
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 ```
 
 **Output `data` schema:**
@@ -992,7 +1069,7 @@ Updates the vacation responder settings. This first fetches the current settings
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `enableAutoReply` (boolean, optional) — Whether Gmail automatically replies to messages.
 - `responseSubject` (string, optional) — Text prepended to the subject line in vacation responses. Either this or the response body must be nonempty to enable auto-replies.
 - `responseBodyPlainText` (string, optional) — Response body in plain text. If both plain-text and HTML bodies are set, HTML is used.
@@ -1042,7 +1119,7 @@ Creates a mail filter (an account can have a maximum of 1,000 filters).
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `from` (string, optional) — Sender's display name or email address. Maps to the filter's `criteria.from`.
 - `to` (string, optional) — Recipient's display name or email address (matches To/Cc/Bcc). Maps to the filter's `criteria.to`.
 - `subject` (string, optional) — Case-insensitive phrase in the subject; whitespace trimmed/collapsed. Maps to the filter's `criteria.subject`.
@@ -1091,7 +1168,7 @@ DESTRUCTIVE — REQUIRES EXPLICIT USER CONFIRMATION BEFORE CALLING. Immediately 
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `id` (string, required) — The ID of the filter to delete.
 ```
 
@@ -1111,7 +1188,7 @@ Gets the specified filter.
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `id` (string, required) — The ID of the filter to fetch.
 ```
 
@@ -1149,7 +1226,7 @@ Lists the message filters of the Gmail user.
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 ```
 
 **Output `data` schema:**
@@ -1191,7 +1268,7 @@ Gets the specified forwarding address.
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `forwardingEmail` (string, required) — The forwarding address to retrieve.
 ```
 
@@ -1214,7 +1291,7 @@ Lists the forwarding addresses for the specified account.
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 ```
 
 **Output `data` schema:**
@@ -1240,7 +1317,7 @@ Gets the specified send-as alias.
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `sendAsEmail` (string, required) — The send-as alias to retrieve.
 ```
 
@@ -1276,7 +1353,7 @@ Lists the send-as aliases for the account, including the primary address and any
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 ```
 
 **Output `data` schema:**
@@ -1313,7 +1390,7 @@ NOTE: this tool first fetches the alias's current state, then applies your chang
 
 **Inputs:**
 ```
-- `userId` (string, required) — The user's email address. The special value `me` can be used to indicate the authenticated user.
+- `userId` (string, optional) — The user's email address. Defaults to `me`, which refers to the authenticated user and is correct for almost every call — set this only if the token has delegated access to another mailbox.
 - `sendAsEmail` (string, required) — The send-as alias to update.
 - `displayName` (string, optional) — Name shown in the From: header.
 - `replyToAddress` (string, optional) — Optional Reply-To: address. Empty means no Reply-To: header is generated.
