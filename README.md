@@ -1,4 +1,4 @@
-**Full programmatic control of Gmail — messages, threads, drafts, labels, filters, and settings — through 43 tools.**
+**Full programmatic control of Gmail — messages, threads, drafts, labels, filters, and settings**
 
 A Model Context Protocol (MCP) server that exposes Gmail's API for reading, sending, and organizing mail, and for managing the mailbox's labels, filters, drafts, and settings.
 
