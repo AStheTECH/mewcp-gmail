@@ -493,8 +493,7 @@ def register_messages_tools(mcp: FastMCP) -> None:
             "(typically adding TRASH and removing INBOX) — everything else about the message "
             "keeps its current value. NOTE: this overwrites the current label state — the "
             "original state is not stored after the call. The response includes both the "
-            "before and after state of the message so you have a full record of what changed. "
-            "Moves the specified message to the trash."
+            "before and after state of the message so you have a full record of what changed."
         ),
         annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
     )
@@ -524,8 +523,7 @@ def register_messages_tools(mcp: FastMCP) -> None:
             "(typically removing TRASH) — everything else about the message keeps its current "
             "value. NOTE: this overwrites the current label state — the original state is not "
             "stored after the call. The response includes both the before and after state of "
-            "the message so you have a full record of what changed. "
-            "Removes the specified message from the trash."
+            "the message so you have a full record of what changed."
         ),
         annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=True),
     )
